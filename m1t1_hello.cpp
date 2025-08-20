@@ -5,7 +5,7 @@ Ryan Frazee
 9/20/25
 First Program
 */
-
+// Magic Words
 #include <iostream>
 using namespace std;
 
