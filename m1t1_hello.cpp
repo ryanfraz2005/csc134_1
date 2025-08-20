@@ -10,5 +10,7 @@ First Program
 using namespace std;
 
 int main () {
+    cout << "Hello, World!" << endl;
+    cout << "My foo is video games" << endl;
     return 0;
 }
