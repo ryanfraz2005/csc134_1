@@ -12,10 +12,7 @@ void question1()
 {
     cout << "Question 1" << endl;
 
-    double Balance, 
-    Deposit, 
-    Withdrawl,
-    Final_Balance;
+    double Balance, Deposit, Withdrawl, Final_Balance;
 
     string Name;
 
