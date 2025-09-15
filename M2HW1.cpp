@@ -5,11 +5,31 @@ Ryan Frazee
 9/15/25
 */
 #include <iostream>
+#include <iomanip>
 using namespace std;
 
 void question1()
 {
     cout << "Question 1" << endl;
+
+    double Balance, 
+    Deposit, 
+    Withdrawl;
+
+    string Name;
+
+    cout << "Enter Name: ";
+    cin >> Name;
+
+     cout << setprecision(2) << fixed;
+     cout << "Enter account balance: ";
+     cin >> Balance;
+     cout << "Enter amount deposited: ";
+     cin >> Deposit;
+     cout << "Enter amount withdrawn: ";
+     cin >> Withdrawl;
+
+
 }
 void question2()
 {
