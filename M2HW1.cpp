@@ -1,6 +1,6 @@
 /*
 CSC 134
-M2HW1 -
+M2HW1 - Gold
 Ryan Frazee
 9/15/25
 */
@@ -16,7 +16,7 @@ void question1()
 
     string Name;
 
-    cout << "Enter Name: ";
+    cout << "Enter first name: ";
     cin >> Name;
 
      cout << setprecision(2) << fixed;
@@ -37,6 +37,7 @@ void question1()
 }
 void question2()
 {
+    cout << "___________" << endl;
     cout << "Question 2" << endl;
 
     const double COST_PER_CUBIC_FOOT = 0.3;
@@ -72,14 +73,57 @@ void question2()
 
 }
 
+void question3()
+{
+     cout << "___________" << endl;
+     cout << "Question 3" << endl;
+
+    int pizzas, slices, visitors, left_over;
+
+    cout << "Enter number of pizzas ordered: ";
+    cin >> pizzas;
+    cout << "Enter number of slices per pizza: ";
+    cin >> slices;
+    cout << "Enter the number of visitors: ";
+    cin >> visitors;
+
+    left_over = (pizzas * slices) / (visitors * 3);
+
+    cout << setprecision(0) << fixed;
+    cout << "Left over slices: " << left_over << endl;
+
+}
+
+void question4()
+{
+    cout << "___________" << endl;
+    cout << "Question 4" << endl;
+
+    string letsGo, school, team, cheerOne, cheerTwo;
+
+    school = "FTCC";
+    team = "Trojans";
+    letsGo = "Lets go ";
+
+    cheerOne = letsGo + school;
+    cheerTwo = letsGo + team;
+
+    cout << cheerOne << endl;
+    cout << cheerOne << endl;
+    cout << cheerOne << endl;
+    cout << cheerTwo << endl;
+    cout << endl;
+
+}
+
 int main ()
 {
     // Call each question as its own function
 
     question1();
     question2();
-
-
+    question3();
+    question4();
 
     return 0;
 }
