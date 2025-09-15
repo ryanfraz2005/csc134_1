@@ -20,11 +20,12 @@ int main()
     cout << item << " (x1)";
     cout << "\t$" << menu_price << endl;
 
-    tax_amount = menu_price + tax_percent;
+    tax_amount = menu_price * tax_percent;
     total_price = menu_price + tax_amount;
 
     cout << setprecision(2) << fixed;
     cout << "Tax:   \t\t$" << tax_amount << endl;
+    cout << "________________________" << endl;
     cout << "Total: \t\t$" << total_price << endl;
 
     return 0;
