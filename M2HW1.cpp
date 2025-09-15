@@ -14,7 +14,8 @@ void question1()
 
     double Balance, 
     Deposit, 
-    Withdrawl;
+    Withdrawl,
+    Final_Balance;
 
     string Name;
 
@@ -22,12 +23,18 @@ void question1()
     cin >> Name;
 
      cout << setprecision(2) << fixed;
-     cout << "Enter account balance: ";
+     cout << "Enter account balance: $";
      cin >> Balance;
-     cout << "Enter amount deposited: ";
+     cout << "Enter amount deposited: $";
      cin >> Deposit;
-     cout << "Enter amount withdrawn: ";
+     cout << "Enter amount withdrawn: $";
      cin >> Withdrawl;
+
+     Final_Balance = Balance + Deposit - Withdrawl;
+
+     cout << "Account name: " << Name << endl;
+     cout << "Account number: 649174290" << endl;
+     cout << "Final account balance: " << Final_Balance << endl;
 
 
 }
