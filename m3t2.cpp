@@ -8,7 +8,7 @@ Beginning of the craps game.
 
 #include <iostream>
 #include <cstdlib>
-#include <time>
+#include <ctime>
 
 using namespace std;
 
@@ -29,7 +29,11 @@ int main()
     */
    int roll1 = 2;
    int roll2 = 5;
+   int point;
 
+   cout << "Enter two dice (press ENTER between) ";
+   cin >> roll1;
+   cin >> roll2;
    int sum = roll1+roll2;
 
    if (sum == 7)
@@ -38,7 +42,9 @@ int main()
    }
    else
     {
+    point = sum;
     cout << "Did not roll a seven." << endl;
+    cout << "Your point is: " << point << endl;
    }
 
     return 0;
