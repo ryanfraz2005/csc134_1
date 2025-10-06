@@ -10,8 +10,6 @@ void exercise3_inventorySystem();
 int main() {
 
 int choice;
-
-
 cout << "==================================" << endl;
 cout << "    LAB 7: LOOP FUNDAMENTALS      " << endl;
 cout << "==================================" << endl;
@@ -53,7 +51,7 @@ return 0;
 
 }
 
-void exercise1_healthRegeb() {
+void exercise1_healthRegen() {
     cout << "\n=== EXERCISE 1: HEALTH REGENERATION ===" << endl;
 
 int health = 30;
@@ -73,30 +71,74 @@ cout << "Fully Recovered!" << endl;
 void exercise2_levelUpStats() {
 cout << "\n=== EXERCISE 2: LEVEL UP STATS ===" << endl;
 
-// Base stats at level 0
 const int BASE_STR = 10;
 const int BASE_DEX = 8;
 const int BASE_INT = 12;
+int str, dex, intel;
 
-// TODO: Display table header
 cout << "Level |  STR  |  DEX  |  INT" << endl;
 cout << "------|-------|-------|-------" << endl;
 
-// TODO: Implement your for loop here
-// HINT: for (int level = 1; level <= 10; level++)
+for (int level = 1; level <= 10; level++) {
+    str = BASE_STR + (level * 2);
+    dex = BASE_DEX + (level * 3);
+    intel = BASE_INT + (level * 1);
+cout << "  " << level << "   |  " << str << "   |  " << dex << "   |  " << intel << endl;
+}
+}
+
+void exercise3_inventorySystem() {
+cout << "\n=== EXERCISE 3: INVENTORY SYSTEM ===" << endl;
+
+// TODO: Create your equipment array with 5 items
+string equipment[5] = {
+    "Iron Sword",
+    "Leather Armor",
+    "Health Potion",
+    "Magic Ring",
+    "Rope"
+};
+
+// TODO: Display all items using a for loop
+cout << "=== YOUR INVENTORY ===" << endl;
+// HINT: for (int i = 0; i < 5; i++)
 // {
-//     Calculate current stats based on level
-//     Display formatted row
+//     cout << (i+1) << ". " << equipment[i] << endl;
 // }
 
 
 
-// TODO: Calculate and display total growth
-// (Level 10 stats - Level 1 stats)
+cout << "======================" << endl << endl;
+
+// TODO: Get search term from user
+string searchTerm;
+cout << "Enter item to search for: ";
+cin.ignore();  // Clear the input buffer
+getline(cin, searchTerm);
+
+// TODO: Search for the item using a loop
+bool found = false;
+int position = -1;
+
+// HINT: for (int i = 0; i < 5; i++)
+// {
+//     if (equipment[i] == searchTerm)
+//     {
+//         found = true;
+//         position = i;
+//         break;  // Stop searching once found
+//     }
+// }
+// TODO: Display search results
+if (found)
+{
+    cout << "Found \"" << searchTerm << "\" in slot " 
+         << (position + 1) << "!" << endl;
 }
-
-void exercise3_inventorySystem() {
-
+else
+{
+    cout << "\"" << searchTerm << "\" not found in inventory." << endl;
+}
 }
 
 
