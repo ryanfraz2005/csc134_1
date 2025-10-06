@@ -90,7 +90,6 @@ cout << "  " << level << "   |  " << str << "   |  " << dex << "   |  " << intel
 void exercise3_inventorySystem() {
 cout << "\n=== EXERCISE 3: INVENTORY SYSTEM ===" << endl;
 
-// TODO: Create your equipment array with 5 items
 string equipment[5] = {
     "Iron Sword",
     "Leather Armor",
@@ -99,37 +98,32 @@ string equipment[5] = {
     "Rope"
 };
 
-// TODO: Display all items using a for loop
 cout << "=== YOUR INVENTORY ===" << endl;
-// HINT: for (int i = 0; i < 5; i++)
-// {
-//     cout << (i+1) << ". " << equipment[i] << endl;
-// }
 
-
+for (int i = 0; i < 5; i++)
+{
+    cout << (i + 1) << ". " << equipment[i] << endl;
+}
 
 cout << "======================" << endl << endl;
 
-// TODO: Get search term from user
 string searchTerm;
 cout << "Enter item to search for: ";
-cin.ignore();  // Clear the input buffer
+cin.ignore(); 
 getline(cin, searchTerm);
 
-// TODO: Search for the item using a loop
+string searchItem;
 bool found = false;
 int position = -1;
 
-// HINT: for (int i = 0; i < 5; i++)
-// {
-//     if (equipment[i] == searchTerm)
-//     {
-//         found = true;
-//         position = i;
-//         break;  // Stop searching once found
-//     }
-// }
-// TODO: Display search results
+for (int i = 0; i < 5; i++)
+{
+    if (equipment[i] == searchItem)
+    {
+        cout << "Found " << searchItem << " at slot " << (i+1) << endl;
+        found = true;
+    }
+}
 if (found)
 {
     cout << "Found \"" << searchTerm << "\" in slot " 
