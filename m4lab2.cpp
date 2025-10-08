@@ -16,11 +16,12 @@ int main () {
     string tile = "🟦";
 
     cout << "Draw a Rectangle" << endl;
+    cout << endl;
     cout << "Length? ";
     cin >> length;
     cout << "Height? ";
     cin >> height;
-
+    cout << endl;
     cout << "Rectangle" << " = " << length << " x " << height << endl;
 
     for (int i = 0; i < height; i++) {
