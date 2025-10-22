@@ -1,0 +1,134 @@
+//  === AI ASSISTANCE DOCUMENTATION ===
+// LLM Used: Claude
+//
+// PROMPT 1:
+// I have a C++ Choose Your Own Adventure program. 
+//Please convert it to Twine's .twee format. Each 
+//function or decision point should become a separate 
+//passage with appropriate links.
+//Here's my code: ....
+//
+// RESULT: I'll convert your C++ Choose Your Own Adventure program to Twine's .twee format. 
+// Each function will become a separate passage with appropriate links.
+
+::StoryTitle
+Your Adventure
+
+::StoryData
+{
+  "ifid": "D674C58C-DEFA-4F70-B7A2-27742230C476",
+  "format": "Harlowe",
+  "format-version": "3.3.0",
+  "start": "Start"
+}
+
+::Start
+==================================
+ WELCOME TO YOUR ADVENTURE 
+==================================
+
+[[Begin your adventure|Tavern]]
+
+::Tavern
+You wake up in a dusty tavern.
+
+The bartender tells you about the trouble in the kingdom. A group of people are invading the castle.
+
+Will you help?
+
+[[Yes, I'll help!|TavernYes]]
+[[No, I won't help|TavernNo]]
+
+::TavernYes
+"Brave soul! Head to the forest!"
+
+[[Continue to the forest|Forest]]
+
+::TavernNo
+"Coward! Get out of my tavern!"
+
+[[Your adventure ends...|GameOver]]
+
+::Forest
+You find a crossroad in the forest.
+
+Where will you go?
+
+[[Take the path on the right|Trail1]]
+[[Take the path on the left|Trail2]]
+
+::Trail1
+You go down the path on the right.
+
+Deadend. Go back.
+
+[[Return to the crossroad|Forest]]
+
+::Trail2
+You go down the path on the left.
+
+After a long walk, you eventually find your way into the kingdom.
+
+Enter the castle?
+
+[[Yes, enter the castle|Castle1]]
+[[No, explore elsewhere|Trail2No]]
+
+::Trail2No
+You decide not to enter the castle yet.
+
+You continue your previous path and find your way into a village.
+
+[[Continue to the village|Village]]
+
+::Village
+You tell the villagers there is trouble at the castle.
+
+They come up with a plan to save the kingdom. Will you help?
+
+[[Yes, I'll help them|VillageYes]]
+[[No, I won't help|VillageNo]]
+
+::VillageYes
+You accompany the armed villagers back to the kingdom and into the castle.
+
+[[Enter the castle together|Castle2]]
+
+::VillageNo
+The villagers call you a coward.
+
+[[Your adventure ends...|GameOver]]
+
+::Castle1
+You enter into the castle and are attacked by a group of people who were invading the castle.
+
+You were no match.
+
+[[Your adventure ends...|GameOver]]
+
+::Castle2
+You make your way back to the castle.
+
+You all were attacked by the invaders. You fight back and after a long battle you emerge victorious!
+
+[[Victory!|Victory]]
+
+::GameOver
+💀 **GAME OVER** 💀
+
+Your adventure ends here.
+
+=== THE END ===
+
+::Victory
+🎉 **VICTORY!** 🎉
+
+You saved the kingdom!
+
+=== THE END ===
+
+// Reflection
+// I think a good prompt is asking the bot to walk you through the process instead of doing it all by itself.
+// A bad prompt would be asking it to do everything for you without understanding the process.
+// I learned that AI assistants can be very helpful but you should not totally rely on them.
+// If I did this again I would probably exapnd on the prompts more and add a lot more to the original story.
