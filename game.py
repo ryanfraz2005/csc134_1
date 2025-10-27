@@ -14,38 +14,48 @@ pygame.init()
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Pokémon Battle Simulation (Polished GFX & Sprites)")
+pygame.display.set_caption("Pokémon Battle Simulation (Final Polished GFX & Sprites)")
 
 # --- SPRITE CONFIGURATION ---
 SPRITES = {
+    # Blue's Team (Opponent - Front Sprites)
     "Charizard": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png",
+    "Blastoise": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/9.png",
+    "Venusaur": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png",
+    
+    # Red's Team (Player - Back Sprites)
     "Tyranitar": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/248.png",
     "Scizor": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/212.png",
     "Espeon": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/196.png",
-    "Blastoise": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/9.png",
-    "Venusaur": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png",
 }
 SPRITE_CACHE = {}
 
 # --- COLORS AND STYLES (Modern Aesthetic) ---
 BLACK = (25, 25, 25)
 WHITE = (255, 255, 255)
-# Background
-BG_TOP_COLOR = (150, 200, 255) # Light Sky
-BG_BOTTOM_COLOR = (200, 220, 255) # Lighter Sky
+
+# Background Gradient
+SKY_BLUE_LIGHT = (150, 200, 255) 
+SKY_BLUE_DARK = (100, 150, 220)
+
 # Platforms
-FIELD_COLOR_PLAYER = (80, 160, 50) # Darker Green Grass
-FIELD_COLOR_OPP = (180, 150, 120) # Stone/Dirt
-# UI
-UI_BOX_BG = (230, 230, 230)
-UI_BOX_BORDER = (50, 50, 50)
-MENU_BLUE = (50, 150, 250)
+PLAYER_PLATFORM_COLOR_LIGHT = (90, 180, 60) # Brighter green
+PLAYER_PLATFORM_COLOR_DARK = (50, 120, 30) # Darker green
+OPPONENT_PLATFORM_COLOR_LIGHT = (180, 150, 120) # Stone/Dirt light
+OPPONENT_PLATFORM_COLOR_DARK = (120, 90, 70) # Stone/Dirt dark
+
+# UI Boxes
+UI_PRIMARY_BG = (230, 230, 230)
+UI_SECONDARY_BG = (200, 200, 200)
+UI_BORDER_DARK = (40, 40, 40)
+UI_BORDER_LIGHT = (255, 255, 255)
+MENU_ACCENT_BLUE = (50, 150, 250)
 
 # HP Bar Colors
 HP_MAX = (0, 200, 0)
 HP_MID = (255, 215, 0)
 HP_LOW = (200, 0, 0)
-HP_BG = (100, 100, 100) # Darker grey background
+HP_BG = (100, 100, 100)
 
 # Fonts
 FONT_SIZE_TITLE = 32
@@ -81,20 +91,18 @@ red_action_selection = 0
 def load_sprite_from_url(name, url):
     """Downloads a sprite from a URL and loads it into Pygame."""
     try:
-        # Check if already loaded
         if name in SPRITE_CACHE:
             return SPRITE_CACHE[name]
 
         response = requests.get(url)
-        response.raise_for_status() # Raise an error for bad status codes
+        response.raise_for_status()
         image_data = BytesIO(response.content)
         
-        # Load, convert, and scale
         sprite = pygame.image.load(image_data).convert_alpha()
         
         # Scale for opponent (front sprite) or player (back sprite)
         if "back" in url:
-            scale_size = (180, 180) # Player back sprite is usually larger
+            scale_size = (180, 180) # Player back sprite
         else:
             scale_size = (150, 150) # Opponent front sprite
             
@@ -110,10 +118,9 @@ def load_sprite_from_url(name, url):
         draw_text(default_surface, "LOAD FAIL", font_small, WHITE, 75, 75, center=True)
         return default_surface
 
-# --- 3. POKEMON AND DAMAGE LOGIC (Simplified for brevity, same as before) ---
+# --- 3. POKEMON AND DAMAGE LOGIC ---
 
 class Pokemon:
-    # ... (Pokemon class definition here - same as previous version) ...
     def __init__(self, name, type, max_hp, attack, defense, moves, is_player_one):
         self.name = name
         self.type = type
@@ -132,8 +139,22 @@ class Pokemon:
         if self.current_hp < 0:
             self.current_hp = 0
 
-# (Type chart and damage calculation functions removed for brevity - assume they are present)
-TYPE_CHART = { "NORMAL": {"ROCK": 0.5, "GHOST": 0.0}, "FIGHTING": {"NORMAL": 2.0, "ROCK": 2.0, "GHOST": 0.0, "FLYING": 0.5, "PSYCHIC": 0.5}, "FLYING": {"FIGHTING": 2.0, "BUG": 2.0, "ROCK": 0.5}, "POISON": {"GRASS": 2.0, "GROUND": 0.5, "ROCK": 0.5}, "GROUND": {"POISON": 2.0, "ROCK": 2.0, "FIRE": 2.0, "FLYING": 0.0, "GRASS": 0.5}, "ROCK": {"FLYING": 2.0, "FIRE": 2.0, "BUG": 2.0, "GROUND": 0.5}, "BUG": {"GRASS": 2.0, "PSYCHIC": 2.0, "POISON": 0.5, "FIRE": 0.5}, "GHOST": {"GHOST": 2.0, "NORMAL": 0.0}, "FIRE": {"GRASS": 2.0, "BUG": 2.0, "WATER": 0.5, "ROCK": 0.5}, "WATER": {"FIRE": 2.0, "GROUND": 2.0, "GRASS": 0.5}, "GRASS": {"WATER": 2.0, "GROUND": 2.0, "FIRE": 0.5, "FLYING": 0.5, "BUG": 0.5, "POISON": 0.5}, "PSYCHIC": {"FIGHTING": 2.0, "POISON": 2.0, "PSYCHIC": 0.5, "DARK": 0.0}, "DARK": {"GHOST": 2.0, "PSYCHIC": 2.0, "FIGHTING": 0.5}, "STEEL": {"ROCK": 2.0, "ICE": 2.0, "FIRE": 0.5, "WATER": 0.5}, }
+TYPE_CHART = {
+    "NORMAL": {"ROCK": 0.5, "GHOST": 0.0},
+    "FIGHTING": {"NORMAL": 2.0, "ROCK": 2.0, "GHOST": 0.0, "FLYING": 0.5, "PSYCHIC": 0.5},
+    "FLYING": {"FIGHTING": 2.0, "BUG": 2.0, "ROCK": 0.5},
+    "POISON": {"GRASS": 2.0, "GROUND": 0.5, "ROCK": 0.5},
+    "GROUND": {"POISON": 2.0, "ROCK": 2.0, "FIRE": 2.0, "FLYING": 0.0, "GRASS": 0.5},
+    "ROCK": {"FLYING": 2.0, "FIRE": 2.0, "BUG": 2.0, "GROUND": 0.5},
+    "BUG": {"GRASS": 2.0, "PSYCHIC": 2.0, "POISON": 0.5, "FIRE": 0.5},
+    "GHOST": {"GHOST": 2.0, "NORMAL": 0.0},
+    "FIRE": {"GRASS": 2.0, "BUG": 2.0, "WATER": 0.5, "ROCK": 0.5},
+    "WATER": {"FIRE": 2.0, "GROUND": 2.0, "GRASS": 0.5},
+    "GRASS": {"WATER": 2.0, "GROUND": 2.0, "FIRE": 0.5, "FLYING": 0.5, "BUG": 0.5, "POISON": 0.5},
+    "PSYCHIC": {"FIGHTING": 2.0, "POISON": 2.0, "PSYCHIC": 0.5, "DARK": 0.0},
+    "DARK": {"GHOST": 2.0, "PSYCHIC": 2.0, "FIGHTING": 0.5},
+    "STEEL": {"ROCK": 2.0, "ICE": 2.0, "FIRE": 0.5, "WATER": 0.5},
+}
 for t in list(TYPE_CHART.keys()):
     for other_t in list(TYPE_CHART.keys()):
         if other_t not in TYPE_CHART[t]: TYPE_CHART[t][other_t] = 1.0
@@ -178,7 +199,6 @@ def use_item(pokemon):
     
 # --- 4. TEAM SETUP ---
 
-# Note: The first Pokémon's sprite will be pre-loaded at the start.
 red_team_data = [
     Pokemon("Tyranitar", "DARK", 120, 150, 110, {"Rock Slide": {"type": "ROCK", "power": 75}, "Crunch": {"type": "DARK", "power": 80}}, True),
     Pokemon("Scizor", "STEEL", 100, 130, 100, {"Iron Head": {"type": "STEEL", "power": 80}, "Slash": {"type": "NORMAL", "power": 70}}, True),
@@ -200,7 +220,7 @@ turn = "RED"
 message_queue.append(f"Battle Start! Blue sent out {blue_current.name}!")
 message_queue.append(f"Red sent out {red_current.name}!")
 
-# Pre-load initial sprites (must happen after Pygame init)
+# Pre-load initial sprites
 red_sprite = load_sprite_from_url(red_current.name, SPRITES[red_current.name])
 blue_sprite = load_sprite_from_url(blue_current.name, SPRITES[blue_current.name])
 
@@ -233,56 +253,63 @@ def draw_hp_bar(surface, pokemon, x, y, width=200, height=12):
     # Draw colored fill (only draw if HP > 0)
     if current_width > 0:
         fill_rect = (x, y, current_width, height)
-        # We draw a small rectangle and then a rounded one over it to manage the end curve
         pygame.draw.rect(surface, color, fill_rect, 0, 6)
-        # Ensure the beginning edge is always straight/filled
-        if current_width > 6:
+        if current_width > 6: # Make sure the start is flat
              pygame.draw.rect(surface, color, (x + 6, y, current_width - 6, height))
 
 def draw_info_box(surface, pokemon, is_player_one):
     """Draws the detailed name/HP box with an angular, polished look."""
     
     if is_player_one: 
-        # Red's Box (Bottom Left, styled as a modern bottom screen info panel)
-        box_rect = pygame.Rect(450, 370, 330, 100)
+        box_rect = pygame.Rect(450, 370, 330, 100) # Player (Red) - Bottom Right
     else: 
-        # Blue's Box (Top Right, styled for opponent)
-        box_rect = pygame.Rect(20, 50, 330, 80)
+        box_rect = pygame.Rect(20, 50, 330, 80) # Opponent (Blue) - Top Left
 
-    # 1. Main Background
-    pygame.draw.rect(surface, UI_BOX_BG, box_rect, 0, 10)
+    # Base background and subtle shadow
+    pygame.draw.rect(surface, UI_PRIMARY_BG, box_rect, 0, 10)
+    pygame.draw.rect(surface, UI_BORDER_DARK, (box_rect.x + 3, box_rect.y + 3, box_rect.width, box_rect.height), 0, 10)
+    pygame.draw.rect(surface, UI_PRIMARY_BG, box_rect, 0, 10)
+
+    # Main outline
+    pygame.draw.rect(surface, UI_BORDER_DARK, box_rect, 2, 10)
     
-    # 2. Outline (Dark border for contrast)
-    pygame.draw.rect(surface, UI_BOX_BORDER, box_rect, 3, 10)
-    
-    # 3. Label/Header Area (Optional accent color)
-    header_rect = box_rect.inflate(-6, -6)
+    # Inner light border for 3D effect
+    pygame.draw.line(surface, UI_BORDER_LIGHT, (box_rect.x + 2, box_rect.y + 2), (box_rect.x + box_rect.width - 3, box_rect.y + 2), 2)
+    pygame.draw.line(surface, UI_BORDER_LIGHT, (box_rect.x + 2, box_rect.y + 2), (box_rect.x + 2, box_rect.y + box_rect.height - 3), 2)
+
+    # Header area (subtle separation)
+    header_rect = box_rect.inflate(-4, -4)
     header_rect.height = 30
-    pygame.draw.rect(surface, (180, 180, 180), header_rect, 0, 7) # Light grey accent
+    header_rect.x += 2
+    header_rect.y += 2
+    pygame.draw.rect(surface, UI_SECONDARY_BG, header_rect, 0, 8)
 
-    # 4. Text Content
-    draw_text(surface, pokemon.name, font_main, BLACK, box_rect.x + 10, box_rect.y + 10)
-    draw_text(surface, f"Lv.{LEVEL}", font_main, BLACK, box_rect.x + 280, box_rect.y + 10)
+    # Text Content
+    draw_text(surface, pokemon.name, font_main, BLACK, box_rect.x + 15, box_rect.y + 10)
+    draw_text(surface, f"Lv.{LEVEL}", font_main, BLACK, box_rect.x + 270, box_rect.y + 10)
     
     hp_bar_x = box_rect.x + 80
-    hp_bar_y = box_rect.y + 50
+    hp_bar_y = box_rect.y + 50 if is_player_one else box_rect.y + 40 # Adjust for opponent smaller box
     hp_bar_width = 230
     
-    draw_text(surface, "HP:", font_small, BLACK, box_rect.x + 10, box_rect.y + 47)
+    draw_text(surface, "HP:", font_small, BLACK, box_rect.x + 15, box_rect.y + 47 if is_player_one else box_rect.y + 37)
     draw_hp_bar(surface, pokemon, hp_bar_x, hp_bar_y, hp_bar_width, height=12)
     
-    if is_player_one:
+    if is_player_one: # Only show HP numbers for player's Pokemon
         hp_text = f"{pokemon.current_hp}/{pokemon.max_hp}"
         draw_text(surface, hp_text, font_small, BLACK, box_rect.x + 170, box_rect.y + 75)
 
 def draw_message_box(surface, message):
-    """Draws the main message box, spanning the bottom of the screen."""
+    """Draws the main message box with a more modern, transparent-like look."""
     msg_box_rect = pygame.Rect(0, SCREEN_HEIGHT - 130, SCREEN_WIDTH, 130)
     
-    # Main Box BG
-    pygame.draw.rect(surface, MENU_BLUE, msg_box_rect)
-    
-    # Text Area Box (Floating, white background)
+    # Main Box BG with a slight gradient for depth
+    for y in range(msg_box_rect.y, msg_box_rect.bottom):
+        alpha = int(255 * ((y - msg_box_rect.y) / msg_box_rect.height * 0.5 + 0.5)) # Fade slightly
+        color = (MENU_ACCENT_BLUE[0], MENU_ACCENT_BLUE[1], MENU_ACCENT_BLUE[2], alpha)
+        pygame.draw.line(surface, color, (0, y), (SCREEN_WIDTH, y))
+
+    # Text Area Box (Floating, white background with border)
     text_area_rect = pygame.Rect(15, SCREEN_HEIGHT - 115, SCREEN_WIDTH - 30, 40)
     pygame.draw.rect(surface, WHITE, text_area_rect, 0, 8)
     pygame.draw.rect(surface, BLACK, text_area_rect, 2, 8) 
@@ -291,23 +318,19 @@ def draw_message_box(surface, message):
 
 def draw_button(surface, rect, text, is_selected):
     """Helper function to draw a single, stylized button."""
-    fill_color = (255, 255, 100) if is_selected else UI_BOX_BG
-    light_edge = (255, 255, 255)
-    dark_edge = (100, 100, 100)
+    fill_color = (255, 255, 150) if is_selected else UI_PRIMARY_BG
+    border_color = BLACK
+    shadow_offset = 3
     
-    # Outer 3D effect (shadow)
+    # Shadow for depth
     if not is_selected:
-        pygame.draw.rect(surface, dark_edge, (rect.x + 3, rect.y + 3, rect.width, rect.height), 0, 8)
+        pygame.draw.rect(surface, UI_BORDER_DARK, (rect.x + shadow_offset, rect.y + shadow_offset, rect.width, rect.height), 0, 8)
     
     # Main button body
     pygame.draw.rect(surface, fill_color, rect, 0, 8) 
     
-    # Inner highlights (top/left)
-    pygame.draw.line(surface, light_edge, (rect.x + 1, rect.y + 1), (rect.x + rect.width - 2, rect.y + 1), 2)
-    pygame.draw.line(surface, light_edge, (rect.x + 1, rect.y + 1), (rect.x + 1, rect.y + rect.height - 2), 2)
-    
-    # Outer border
-    pygame.draw.rect(surface, BLACK, rect, 1, 8)
+    # Outline
+    pygame.draw.rect(surface, border_color, rect, 2, 8)
     
     draw_text(surface, text, font_main, BLACK, rect.centerx, rect.centery, center=True)
 
@@ -316,20 +339,21 @@ def draw_command_menu(surface):
     """Draws the action menu (FIGHT, ITEM, SWITCH) using buttons."""
     global red_action_options, red_action_selection
     
-    menu_x, menu_y = SCREEN_WIDTH // 2, SCREEN_HEIGHT - 85
-    menu_width, menu_height = SCREEN_WIDTH // 2 - 20, 60
+    menu_x_start = SCREEN_WIDTH // 2 + 10
+    menu_y_start = SCREEN_HEIGHT - 105
+    button_width = (SCREEN_WIDTH // 2) - 40
+    button_height = 40
+    button_spacing = 10
     
     for i, option in enumerate(red_action_options):
-        row = i // 2
-        col = i % 2
+        # Arrange in two columns
+        row = i % 2
+        col = i // 2
         
-        # Adjust position to be centered at the bottom right
-        button_x = menu_x + 10 + col * (menu_width // 2)
-        button_y = menu_y + row * (menu_height // 2 + 5)
-        button_width = menu_width // 2 - 15
-        button_height = 30
+        btn_x = menu_x_start + col * (button_width + button_spacing)
+        btn_y = menu_y_start + row * (button_height + button_spacing)
         
-        button_rect = pygame.Rect(button_x, button_y, button_width, button_height)
+        button_rect = pygame.Rect(btn_x, btn_y, button_width // 2 - button_spacing, button_height)
         draw_button(surface, button_rect, option, (i == red_action_selection))
 
 
@@ -337,77 +361,84 @@ def draw_fight_menu(surface):
     """Draws the move selection menu using buttons."""
     global red_move_selection
     
-    menu_x, menu_y = SCREEN_WIDTH // 2, SCREEN_HEIGHT - 85
-    menu_width, menu_height = SCREEN_WIDTH // 2 - 20, 60
+    menu_x_start = SCREEN_WIDTH // 2 + 10
+    menu_y_start = SCREEN_HEIGHT - 105
+    button_width = (SCREEN_WIDTH // 2) - 40
+    button_height = 40
+    button_spacing = 10
     
     moves = list(red_current.moves.keys())
     
     for i, move_name in enumerate(moves):
-        row = i // 2
-        col = i % 2
+        # Arrange in two columns
+        row = i % 2
+        col = i // 2
         
-        button_x = menu_x + 10 + col * (menu_width // 2)
-        button_y = menu_y + row * (menu_height // 2 + 5)
-        button_width = menu_width // 2 - 15
-        button_height = 30
+        btn_x = menu_x_start + col * (button_width + button_spacing)
+        btn_y = menu_y_start + row * (button_height + button_spacing)
         
-        button_rect = pygame.Rect(button_x, button_y, button_width, button_height)
+        button_rect = pygame.Rect(btn_x, btn_y, button_width // 2 - button_spacing, button_height)
         draw_button(surface, button_rect, move_name, (i == red_move_selection))
 
 
 def draw_arena(surface):
-    """Draws the background arena, platforms, and sprites."""
+    """Draws the background arena, platforms, and sprites with clouds."""
     global red_sprite, blue_sprite
     
     # 1. Main Sky Background (Gradient)
     for y in range(0, SCREEN_HEIGHT - 130):
-        # Interpolate color between top and bottom
-        r = int(BG_TOP_COLOR[0] + (BG_BOTTOM_COLOR[0] - BG_TOP_COLOR[0]) * (y / (SCREEN_HEIGHT - 130)))
-        g = int(BG_TOP_COLOR[1] + (BG_BOTTOM_COLOR[1] - BG_TOP_COLOR[1]) * (y / (SCREEN_HEIGHT - 130)))
-        b = int(BG_TOP_COLOR[2] + (BG_BOTTOM_COLOR[2] - BG_TOP_COLOR[2]) * (y / (SCREEN_HEIGHT - 130)))
+        r = int(SKY_BLUE_LIGHT[0] + (SKY_BLUE_DARK[0] - SKY_BLUE_LIGHT[0]) * (y / (SCREEN_HEIGHT - 130)))
+        g = int(SKY_BLUE_LIGHT[1] + (SKY_BLUE_DARK[1] - SKY_BLUE_LIGHT[1]) * (y / (SCREEN_HEIGHT - 130)))
+        b = int(SKY_BLUE_LIGHT[2] + (SKY_BLUE_DARK[2] - SKY_BLUE_LIGHT[2]) * (y / (SCREEN_HEIGHT - 130)))
         pygame.draw.line(surface, (r, g, b), (0, y), (SCREEN_WIDTH, y))
         
-    # 2. Platforms (Stylized ellipses for depth)
+    # 2. Clouds (Simple white ellipses for visual interest)
+    pygame.draw.ellipse(surface, WHITE, (50, 40, 150, 80), 0)
+    pygame.draw.ellipse(surface, WHITE, (120, 30, 100, 60), 0)
+    pygame.draw.ellipse(surface, WHITE, (600, 80, 180, 90), 0)
+    pygame.draw.ellipse(surface, WHITE, (680, 70, 120, 70), 0)
+
+    # 3. Platforms (More prominent and slightly 3D)
     
     # Opponent Platform (Top-Left)
-    opp_platform_rect = pygame.Rect(50, 150, 300, 50)
-    pygame.draw.ellipse(surface, FIELD_COLOR_OPP, opp_platform_rect)
+    opp_platform_rect = pygame.Rect(50, 180, 320, 60)
+    pygame.draw.ellipse(surface, OPPONENT_PLATFORM_COLOR_LIGHT, opp_platform_rect)
+    pygame.draw.ellipse(surface, OPPONENT_PLATFORM_COLOR_DARK, (opp_platform_rect.x, opp_platform_rect.y + 10, opp_platform_rect.width, opp_platform_rect.height - 10))
     pygame.draw.ellipse(surface, BLACK, opp_platform_rect, 3) 
     
     # Player Platform (Bottom-Right, larger)
-    player_platform_rect = pygame.Rect(400, 350, 380, 80)
-    pygame.draw.ellipse(surface, FIELD_COLOR_PLAYER, player_platform_rect)
+    player_platform_rect = pygame.Rect(430, 380, 320, 80)
+    pygame.draw.ellipse(surface, PLAYER_PLATFORM_COLOR_LIGHT, player_platform_rect)
+    pygame.draw.ellipse(surface, PLAYER_PLATFORM_COLOR_DARK, (player_platform_rect.x, player_platform_rect.y + 15, player_platform_rect.width, player_platform_rect.height - 15))
     pygame.draw.ellipse(surface, BLACK, player_platform_rect, 4) 
 
-    # 3. Pokémon Sprites
+    # 4. Pokémon Sprites (Corrected Positions)
     
-    # BLUE'S SPRITE (Opponent - Top-Left)
+    # BLUE'S SPRITE (Opponent - Front, Left Side)
     if blue_current and blue_current.name in SPRITE_CACHE:
         sprite = SPRITE_CACHE[blue_current.name]
-        # Position sprite above the platform
-        surface.blit(sprite, (opp_platform_rect.centerx - sprite.get_width() // 2, opp_platform_rect.y - sprite.get_height() + 20))
+        # Position sprite above the opponent's platform, slightly offset
+        surface.blit(sprite, (opp_platform_rect.x + opp_platform_rect.width // 2 - sprite.get_width() // 2, opp_platform_rect.y - sprite.get_height() + 20))
     
-    # RED'S SPRITE (Player - Bottom-Right)
+    # RED'S SPRITE (Player - Back, Right Side)
     if red_current and red_current.name in SPRITE_CACHE:
         sprite = SPRITE_CACHE[red_current.name]
-        # Position sprite above the platform
-        surface.blit(sprite, (player_platform_rect.centerx - sprite.get_width() // 2, player_platform_rect.y - sprite.get_height() + 40))
+        # Position sprite above the player's platform, slightly offset
+        surface.blit(sprite, (player_platform_rect.x + player_platform_rect.width // 2 - sprite.get_width() // 2, player_platform_rect.y - sprite.get_height() + 40))
 
 # --- 6. GAME CONTROL FLOW ---
 
 def handle_faint(fainted_pokemon):
-    # (Faint and switch logic - includes loading new sprite on switch)
     global red_current, blue_current, battle_state, message_queue, red_sprite, blue_sprite
     
     is_red = fainted_pokemon.is_player_one
     
-    if not is_red:
+    if not is_red: # Blue's Pokémon fainted
         fainted_name = blue_current.name
         blue_team[:] = [p for p in blue_team if p.name != fainted_name]
         try:
             blue_current = blue_team[0]
-            # Load new sprite
-            blue_sprite = load_sprite_from_url(blue_current.name, SPRITES[blue_current.name])
+            blue_sprite = load_sprite_from_url(blue_current.name, SPRITES[blue_current.name]) # Load new sprite
             message_queue.append(f"{fainted_name} fainted!")
             message_queue.append(f"Blue sends out {blue_current.name}!")
         except IndexError:
@@ -415,13 +446,12 @@ def handle_faint(fainted_pokemon):
             battle_state = BATTLE_STATE_END
             return True
             
-    else:
+    else: # Red's Pokémon fainted
         fainted_name = red_current.name
         red_team[:] = [p for p in red_team if p.name != fainted_name]
         try:
             red_current = red_team[0]
-            # Load new sprite
-            red_sprite = load_sprite_from_url(red_current.name, SPRITES[red_current.name])
+            red_sprite = load_sprite_from_url(red_current.name, SPRITES[red_current.name]) # Load new sprite
             message_queue.append(f"{fainted_name} fainted!")
             message_queue.append(f"Red automatically sends out {red_current.name}!")
         except IndexError:
@@ -432,7 +462,6 @@ def handle_faint(fainted_pokemon):
     return False
 
 def execute_player_turn(action, data=None):
-    # (Turn execution logic)
     global battle_state, message_queue, red_current, red_sprite, blue_current
     
     if action == "FIGHT":
@@ -445,19 +474,14 @@ def execute_player_turn(action, data=None):
         message_queue.extend(messages)
         
     elif action == "SWITCH":
-        # Find next available Pokémon that is not fainted
         next_pokemon = next((p for p in red_team if p != red_current and not p.is_fainted()), None)
         
         if next_pokemon:
             old_name = red_current.name
-            
             red_team.remove(next_pokemon)
             red_team.insert(0, next_pokemon)
             red_current = next_pokemon
-            
-            # Load new sprite for the switched-in Pokémon
-            red_sprite = load_sprite_from_url(red_current.name, SPRITES[red_current.name])
-            
+            red_sprite = load_sprite_from_url(red_current.name, SPRITES[red_current.name]) # Load new sprite
             message_queue.append(f"Red withdrew {old_name}!")
             message_queue.append(f"Red sent out {red_current.name}!")
         else:
@@ -468,7 +492,6 @@ def execute_player_turn(action, data=None):
     battle_state = BATTLE_STATE_DISPLAY_MESSAGE
 
 def execute_ai_turn():
-    # (AI execution logic)
     global battle_state, message_queue, blue_current, red_current
     
     if red_current.is_fainted():
@@ -476,9 +499,8 @@ def execute_ai_turn():
             return 
     
     if blue_current and not blue_current.is_fainted():
-        # AI always chooses a random move for simple simulation
         move_names = list(blue_current.moves.keys())
-        move_name = random.choice(move_names)
+        move_name = random.choice(move_names) # Blue's AI now picks a random move
         messages = use_move(blue_current, red_current, move_name)
         message_queue.extend(messages)
 
@@ -499,9 +521,7 @@ while running:
             if event.key == pygame.K_ESCAPE:
                 running = False
             
-            # Input handling for state machine
             if battle_state == BATTLE_STATE_CHOOSING_ACTION:
-                # Same input logic as before
                 if event.key == pygame.K_UP: red_action_selection = max(0, red_action_selection - 2)
                 elif event.key == pygame.K_DOWN: red_action_selection = min(len(red_action_options) - 1, red_action_selection + 2)
                 elif event.key == pygame.K_LEFT: red_action_selection = max(0, red_action_selection - 1)
@@ -517,7 +537,6 @@ while running:
                         
             elif battle_state == BATTLE_STATE_CHOOSING_MOVE:
                 moves = list(red_current.moves.keys())
-                # Same input logic as before
                 if event.key == pygame.K_UP or event.key == pygame.K_LEFT: red_move_selection = max(0, red_move_selection - 1)
                 elif event.key == pygame.K_DOWN or event.key == pygame.K_RIGHT: red_move_selection = min(len(moves) - 1, red_move_selection + 1)
                 elif event.key == pygame.K_BACKSPACE: battle_state = BATTLE_STATE_CHOOSING_ACTION
