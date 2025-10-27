@@ -4,33 +4,39 @@ import random
 # Initialize Pygame
 pygame.init()
 
-# Constants
-BLOCK_SIZE = 35
+# Constants - Better proportions
+BLOCK_SIZE = 32
 BOARD_WIDTH = 10
 BOARD_HEIGHT = 20
-SIDEBAR_WIDTH = 280
-GAME_AREA_WIDTH = BOARD_WIDTH * BLOCK_SIZE
-GAME_AREA_HEIGHT = BOARD_HEIGHT * BLOCK_SIZE
+PADDING = 30
+SIDEBAR_WIDTH = 300
+PANEL_MARGIN = 15
+
+GAME_AREA_WIDTH = BOARD_WIDTH * BLOCK_SIZE + PADDING * 2
+GAME_AREA_HEIGHT = BOARD_HEIGHT * BLOCK_SIZE + PADDING * 2
 SCREEN_WIDTH = GAME_AREA_WIDTH + SIDEBAR_WIDTH
 SCREEN_HEIGHT = GAME_AREA_HEIGHT
 
-# Colors
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-GRAY = (40, 40, 40)
-LIGHT_GRAY = (60, 60, 60)
-DARK_GRAY = (25, 25, 25)
-CYAN = (0, 240, 240)
-YELLOW = (240, 240, 0)
-PURPLE = (160, 0, 240)
-GREEN = (0, 240, 0)
-RED = (240, 0, 0)
-BLUE = (0, 0, 240)
-ORANGE = (240, 160, 0)
-UI_BG = (35, 35, 50)
-UI_PANEL = (45, 45, 65)
+# Colors - Modern color scheme
+BG_COLOR = (15, 15, 25)
+BOARD_BG = (25, 25, 40)
+GRID_COLOR = (40, 40, 60)
+PANEL_BG = (30, 30, 50)
+PANEL_BORDER = (60, 60, 90)
+TEXT_PRIMARY = (240, 240, 255)
+TEXT_SECONDARY = (150, 150, 180)
+ACCENT = (100, 150, 255)
 
-# Tetromino shapes and colors
+# Piece colors - Vibrant and distinct
+CYAN = (0, 240, 240)
+YELLOW = (255, 220, 0)
+PURPLE = (180, 0, 255)
+GREEN = (0, 255, 100)
+RED = (255, 50, 50)
+BLUE = (50, 100, 255)
+ORANGE = (255, 140, 0)
+
+# Tetromino shapes
 SHAPES = [
     [[1, 1, 1, 1]],  # I
     [[1, 1], [1, 1]],  # O
@@ -44,306 +50,329 @@ SHAPES = [
 SHAPE_COLORS = [CYAN, YELLOW, PURPLE, GREEN, RED, BLUE, ORANGE]
 
 class Tetromino:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
+    def __init__(self):
         self.shape_index = random.randint(0, len(SHAPES) - 1)
-        self.shape = SHAPES[self.shape_index]
+        self.shape = [row[:] for row in SHAPES[self.shape_index]]
         self.color = SHAPE_COLORS[self.shape_index]
-        self.rotation = 0
-    
-    def get_shape(self):
-        return self.shape
+        self.x = BOARD_WIDTH // 2 - len(self.shape[0]) // 2
+        self.y = 0
     
     def rotate(self):
-        # Rotate the shape 90 degrees clockwise
         self.shape = [list(row) for row in zip(*self.shape[::-1])]
 
 class Tetris:
     def __init__(self):
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption("Tetris")
+        pygame.display.set_caption("Tetris - Classic Edition")
         self.clock = pygame.time.Clock()
+        
+        # Game state
         self.board = [[0 for _ in range(BOARD_WIDTH)] for _ in range(BOARD_HEIGHT)]
-        self.board_colors = [[BLACK for _ in range(BOARD_WIDTH)] for _ in range(BOARD_HEIGHT)]
-        self.current_piece = None
-        self.next_piece = Tetromino(BOARD_WIDTH // 2 - 1, 0)
-        self.spawn_piece()
+        self.board_colors = [[None for _ in range(BOARD_WIDTH)] for _ in range(BOARD_HEIGHT)]
+        self.current_piece = Tetromino()
+        self.next_piece = Tetromino()
         self.score = 0
         self.level = 1
         self.lines_cleared = 0
         self.game_over = False
+        self.paused = False
+        
+        # Timing
         self.fall_time = 0
-        self.fall_speed = 500  # milliseconds
+        self.fall_speed = 800
         
-        # Fonts
-        self.title_font = pygame.font.Font(None, 48)
-        self.font = pygame.font.Font(None, 36)
-        self.small_font = pygame.font.Font(None, 28)
-        self.tiny_font = pygame.font.Font(None, 22)
+        # Fonts - Better hierarchy
+        self.title_font = pygame.font.Font(None, 56)
+        self.large_font = pygame.font.Font(None, 42)
+        self.medium_font = pygame.font.Font(None, 32)
+        self.small_font = pygame.font.Font(None, 24)
     
-    def spawn_piece(self):
-        self.current_piece = self.next_piece
-        self.current_piece.x = BOARD_WIDTH // 2 - len(self.current_piece.get_shape()[0]) // 2
-        self.current_piece.y = 0
-        self.next_piece = Tetromino(BOARD_WIDTH // 2 - 1, 0)
-        
-        if not self.is_valid_move(self.current_piece, self.current_piece.x, self.current_piece.y):
-            self.game_over = True
-    
-    def is_valid_move(self, piece, x, y):
-        shape = piece.get_shape()
-        for i, row in enumerate(shape):
+    def is_valid_move(self, piece, offset_x=0, offset_y=0):
+        for i, row in enumerate(piece.shape):
             for j, cell in enumerate(row):
                 if cell:
-                    new_x = x + j
-                    new_y = y + i
+                    new_x = piece.x + j + offset_x
+                    new_y = piece.y + i + offset_y
+                    
                     if (new_x < 0 or new_x >= BOARD_WIDTH or 
-                        new_y >= BOARD_HEIGHT or 
-                        (new_y >= 0 and self.board[new_y][new_x])):
+                        new_y >= BOARD_HEIGHT):
+                        return False
+                    
+                    if new_y >= 0 and self.board[new_y][new_x]:
                         return False
         return True
     
     def lock_piece(self):
-        shape = self.current_piece.get_shape()
-        for i, row in enumerate(shape):
+        for i, row in enumerate(self.current_piece.shape):
             for j, cell in enumerate(row):
-                if cell:
-                    x = self.current_piece.x + j
+                if cell and self.current_piece.y + i >= 0:
                     y = self.current_piece.y + i
-                    if y >= 0:
-                        self.board[y][x] = 1
-                        self.board_colors[y][x] = self.current_piece.color
+                    x = self.current_piece.x + j
+                    self.board[y][x] = 1
+                    self.board_colors[y][x] = self.current_piece.color
+        
         self.clear_lines()
-        self.spawn_piece()
+        self.current_piece = self.next_piece
+        self.next_piece = Tetromino()
+        
+        if not self.is_valid_move(self.current_piece):
+            self.game_over = True
     
     def clear_lines(self):
-        lines_to_clear = []
+        lines = []
         for i in range(BOARD_HEIGHT):
             if all(self.board[i]):
-                lines_to_clear.append(i)
+                lines.append(i)
         
-        for line in lines_to_clear:
+        for line in lines:
             del self.board[line]
             del self.board_colors[line]
-            self.board.insert(0, [0 for _ in range(BOARD_WIDTH)])
-            self.board_colors.insert(0, [BLACK for _ in range(BOARD_WIDTH)])
+            self.board.insert(0, [0] * BOARD_WIDTH)
+            self.board_colors.insert(0, [None] * BOARD_WIDTH)
         
-        num_lines = len(lines_to_clear)
-        if num_lines > 0:
-            self.lines_cleared += num_lines
-            self.score += [0, 100, 300, 500, 800][num_lines] * self.level
-            self.level = self.lines_cleared // 10 + 1
-            self.fall_speed = max(100, 500 - (self.level - 1) * 50)
+        if lines:
+            self.lines_cleared += len(lines)
+            points = [0, 100, 300, 500, 800][len(lines)]
+            self.score += points * self.level
+            self.level = min(self.lines_cleared // 10 + 1, 15)
+            self.fall_speed = max(100, 800 - (self.level - 1) * 50)
     
     def move(self, dx, dy):
-        if self.is_valid_move(self.current_piece, self.current_piece.x + dx, self.current_piece.y + dy):
+        if self.is_valid_move(self.current_piece, dx, dy):
             self.current_piece.x += dx
             self.current_piece.y += dy
             return True
         return False
     
-    def rotate_piece(self):
-        old_shape = self.current_piece.shape
+    def rotate(self):
+        old_shape = [row[:] for row in self.current_piece.shape]
         self.current_piece.rotate()
-        if not self.is_valid_move(self.current_piece, self.current_piece.x, self.current_piece.y):
+        
+        if not self.is_valid_move(self.current_piece):
+            # Try wall kicks
+            for offset in [(1, 0), (-1, 0), (0, -1)]:
+                if self.is_valid_move(self.current_piece, offset[0], offset[1]):
+                    self.current_piece.x += offset[0]
+                    self.current_piece.y += offset[1]
+                    return
             self.current_piece.shape = old_shape
     
     def hard_drop(self):
         while self.move(0, 1):
-            pass
+            self.score += 2
         self.lock_piece()
     
-    def draw_block(self, x, y, color, offset_x=0, offset_y=0):
-        rect = pygame.Rect(offset_x + x * BLOCK_SIZE, offset_y + y * BLOCK_SIZE, 
-                          BLOCK_SIZE, BLOCK_SIZE)
+    def draw_block(self, x, y, color, size=BLOCK_SIZE):
+        # Inner block
+        inner_size = size - 4
+        pygame.draw.rect(self.screen, color, 
+                        (x + 2, y + 2, inner_size, inner_size))
         
-        # Draw main block
-        pygame.draw.rect(self.screen, color, rect)
+        # Highlight
+        highlight = tuple(min(c + 50, 255) for c in color)
+        pygame.draw.line(self.screen, highlight, (x + 2, y + 2), 
+                        (x + size - 2, y + 2), 2)
+        pygame.draw.line(self.screen, highlight, (x + 2, y + 2), 
+                        (x + 2, y + size - 2), 2)
         
-        # Draw highlight for 3D effect
-        highlight = tuple(min(c + 40, 255) for c in color)
-        pygame.draw.rect(self.screen, highlight, rect, 3)
-        
-        # Draw border
-        pygame.draw.rect(self.screen, DARK_GRAY, rect, 2)
+        # Shadow
+        shadow = tuple(max(c - 50, 0) for c in color)
+        pygame.draw.line(self.screen, shadow, (x + size - 2, y + 2), 
+                        (x + size - 2, y + size - 2), 2)
+        pygame.draw.line(self.screen, shadow, (x + 2, y + size - 2), 
+                        (x + size - 2, y + size - 2), 2)
     
     def draw_board(self):
-        # Draw board background
-        board_rect = pygame.Rect(0, 0, GAME_AREA_WIDTH, GAME_AREA_HEIGHT)
-        pygame.draw.rect(self.screen, GRAY, board_rect)
+        # Board background with border
+        board_x = PADDING
+        board_y = PADDING
+        board_w = BOARD_WIDTH * BLOCK_SIZE
+        board_h = BOARD_HEIGHT * BLOCK_SIZE
         
-        # Draw grid and blocks
+        pygame.draw.rect(self.screen, BOARD_BG, 
+                        (board_x, board_y, board_w, board_h))
+        pygame.draw.rect(self.screen, ACCENT, 
+                        (board_x - 2, board_y - 2, board_w + 4, board_h + 4), 3)
+        
+        # Grid lines
+        for i in range(BOARD_HEIGHT + 1):
+            y = board_y + i * BLOCK_SIZE
+            pygame.draw.line(self.screen, GRID_COLOR, 
+                           (board_x, y), (board_x + board_w, y), 1)
+        
+        for j in range(BOARD_WIDTH + 1):
+            x = board_x + j * BLOCK_SIZE
+            pygame.draw.line(self.screen, GRID_COLOR, 
+                           (x, board_y), (x, board_y + board_h), 1)
+        
+        # Draw locked pieces
         for i in range(BOARD_HEIGHT):
             for j in range(BOARD_WIDTH):
                 if self.board[i][j]:
-                    self.draw_block(j, i, self.board_colors[i][j])
-                else:
-                    # Draw grid lines
-                    rect = pygame.Rect(j * BLOCK_SIZE, i * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
-                    pygame.draw.rect(self.screen, LIGHT_GRAY, rect, 1)
+                    x = board_x + j * BLOCK_SIZE
+                    y = board_y + i * BLOCK_SIZE
+                    self.draw_block(x, y, self.board_colors[i][j])
         
-        # Draw board border
-        pygame.draw.rect(self.screen, WHITE, board_rect, 3)
+        # Draw current piece
+        if not self.game_over and not self.paused:
+            for i, row in enumerate(self.current_piece.shape):
+                for j, cell in enumerate(row):
+                    if cell:
+                        x = board_x + (self.current_piece.x + j) * BLOCK_SIZE
+                        y = board_y + (self.current_piece.y + i) * BLOCK_SIZE
+                        if y >= board_y:
+                            self.draw_block(x, y, self.current_piece.color)
     
-    def draw_current_piece(self):
-        shape = self.current_piece.get_shape()
+    def draw_panel(self, x, y, w, h):
+        pygame.draw.rect(self.screen, PANEL_BG, (x, y, w, h), border_radius=8)
+        pygame.draw.rect(self.screen, PANEL_BORDER, (x, y, w, h), 2, border_radius=8)
+    
+    def draw_text_centered(self, text, font, color, x, y, w):
+        surface = font.render(text, True, color)
+        rect = surface.get_rect(center=(x + w // 2, y))
+        self.screen.blit(surface, rect)
+    
+    def draw_sidebar(self):
+        sidebar_x = GAME_AREA_WIDTH
+        
+        # Title
+        self.draw_text_centered("TETRIS", self.title_font, ACCENT, 
+                               sidebar_x, 40, SIDEBAR_WIDTH)
+        
+        # Next piece panel
+        next_y = 100
+        next_h = 160
+        self.draw_panel(sidebar_x + PANEL_MARGIN, next_y, 
+                       SIDEBAR_WIDTH - PANEL_MARGIN * 2, next_h)
+        
+        label = self.medium_font.render("NEXT", True, TEXT_SECONDARY)
+        label_rect = label.get_rect(center=(sidebar_x + SIDEBAR_WIDTH // 2, next_y + 25))
+        self.screen.blit(label, label_rect)
+        
+        # Draw next piece
+        piece_size = 25
+        shape = self.next_piece.shape
+        total_w = len(shape[0]) * piece_size
+        total_h = len(shape) * piece_size
+        start_x = sidebar_x + (SIDEBAR_WIDTH - total_w) // 2
+        start_y = next_y + 65 + (next_h - 65 - total_h) // 2
+        
         for i, row in enumerate(shape):
             for j, cell in enumerate(row):
                 if cell:
-                    self.draw_block(self.current_piece.x + j, 
-                                  self.current_piece.y + i, 
-                                  self.current_piece.color)
-    
-    def draw_panel(self, x, y, width, height, title):
-        # Draw panel background
-        panel_rect = pygame.Rect(x, y, width, height)
-        pygame.draw.rect(self.screen, UI_PANEL, panel_rect)
-        pygame.draw.rect(self.screen, LIGHT_GRAY, panel_rect, 2)
+                    x = start_x + j * piece_size
+                    y = start_y + i * piece_size
+                    self.draw_block(x, y, self.next_piece.color, piece_size)
         
-        # Draw title
-        if title:
-            title_text = self.small_font.render(title, True, WHITE)
-            title_rect = title_text.get_rect(centerx=x + width // 2, top=y + 10)
-            self.screen.blit(title_text, title_rect)
-    
-    def draw_next_piece(self):
-        panel_x = GAME_AREA_WIDTH + 20
-        panel_y = 100
-        panel_width = SIDEBAR_WIDTH - 40
-        panel_height = 150
+        # Stats panel
+        stats_y = next_y + next_h + 20
+        stats_h = 240
+        self.draw_panel(sidebar_x + PANEL_MARGIN, stats_y, 
+                       SIDEBAR_WIDTH - PANEL_MARGIN * 2, stats_h)
         
-        self.draw_panel(panel_x, panel_y, panel_width, panel_height, "NEXT")
-        
-        # Draw the next piece centered in the panel
-        shape = self.next_piece.get_shape()
-        piece_width = len(shape[0]) * 30
-        piece_height = len(shape) * 30
-        start_x = panel_x + (panel_width - piece_width) // 2
-        start_y = panel_y + 50 + (panel_height - 50 - piece_height) // 2
-        
-        for i, row in enumerate(shape):
-            for j, cell in enumerate(row):
-                if cell:
-                    rect = pygame.Rect(start_x + j * 30, start_y + i * 30, 28, 28)
-                    pygame.draw.rect(self.screen, self.next_piece.color, rect)
-                    highlight = tuple(min(c + 40, 255) for c in self.next_piece.color)
-                    pygame.draw.rect(self.screen, highlight, rect, 2)
-                    pygame.draw.rect(self.screen, DARK_GRAY, rect, 1)
-    
-    def draw_stats(self):
-        panel_x = GAME_AREA_WIDTH + 20
-        panel_y = 270
-        panel_width = SIDEBAR_WIDTH - 40
-        panel_height = 180
-        
-        self.draw_panel(panel_x, panel_y, panel_width, panel_height, "STATS")
-        
-        # Draw stats
-        stats = [
-            ("Score", str(self.score)),
-            ("Level", str(self.level)),
-            ("Lines", str(self.lines_cleared))
+        stats_data = [
+            ("SCORE", str(self.score), self.large_font),
+            ("LEVEL", str(self.level), self.large_font),
+            ("LINES", str(self.lines_cleared), self.large_font)
         ]
         
-        y_offset = panel_y + 50
-        for label, value in stats:
-            label_text = self.small_font.render(label + ":", True, LIGHT_GRAY)
-            value_text = self.font.render(value, True, WHITE)
+        stat_y = stats_y + 30
+        for label, value, font in stats_data:
+            label_surf = self.small_font.render(label, True, TEXT_SECONDARY)
+            value_surf = font.render(value, True, TEXT_PRIMARY)
             
-            self.screen.blit(label_text, (panel_x + 20, y_offset))
-            value_rect = value_text.get_rect(right=panel_x + panel_width - 20, centery=y_offset + 15)
-            self.screen.blit(value_text, value_rect)
-            y_offset += 50
-    
-    def draw_controls(self):
-        panel_x = GAME_AREA_WIDTH + 20
-        panel_y = 470
-        panel_width = SIDEBAR_WIDTH - 40
-        panel_height = 220
+            label_rect = label_surf.get_rect(center=(sidebar_x + SIDEBAR_WIDTH // 2, stat_y))
+            value_rect = value_surf.get_rect(center=(sidebar_x + SIDEBAR_WIDTH // 2, stat_y + 25))
+            
+            self.screen.blit(label_surf, label_rect)
+            self.screen.blit(value_surf, value_rect)
+            stat_y += 75
         
-        self.draw_panel(panel_x, panel_y, panel_width, panel_height, "CONTROLS")
+        # Controls panel
+        controls_y = stats_y + stats_h + 20
+        controls_h = 200
+        self.draw_panel(sidebar_x + PANEL_MARGIN, controls_y, 
+                       SIDEBAR_WIDTH - PANEL_MARGIN * 2, controls_h)
+        
+        controls_title = self.medium_font.render("CONTROLS", True, TEXT_SECONDARY)
+        title_rect = controls_title.get_rect(center=(sidebar_x + SIDEBAR_WIDTH // 2, controls_y + 20))
+        self.screen.blit(controls_title, title_rect)
         
         controls = [
             ("← →", "Move"),
             ("↑", "Rotate"),
-            ("↓", "Soft Drop"),
-            ("Space", "Hard Drop"),
-            ("R", "Restart")
+            ("↓", "Drop"),
+            ("SPACE", "Hard Drop"),
+            ("P", "Pause")
         ]
         
-        y_offset = panel_y + 50
+        control_y = controls_y + 55
         for key, action in controls:
-            key_text = self.tiny_font.render(key, True, CYAN)
-            action_text = self.tiny_font.render(action, True, WHITE)
+            key_surf = self.small_font.render(key, True, ACCENT)
+            action_surf = self.small_font.render(action, True, TEXT_PRIMARY)
             
-            self.screen.blit(key_text, (panel_x + 20, y_offset))
-            self.screen.blit(action_text, (panel_x + 110, y_offset))
-            y_offset += 32
+            self.screen.blit(key_surf, (sidebar_x + 40, control_y))
+            self.screen.blit(action_surf, (sidebar_x + 140, control_y))
+            control_y += 28
     
-    def draw_sidebar(self):
-        # Draw sidebar background
-        sidebar_rect = pygame.Rect(GAME_AREA_WIDTH, 0, SIDEBAR_WIDTH, SCREEN_HEIGHT)
-        pygame.draw.rect(self.screen, UI_BG, sidebar_rect)
+    def draw_game_over(self):
+        overlay = pygame.Surface((GAME_AREA_WIDTH, GAME_AREA_HEIGHT))
+        overlay.set_alpha(200)
+        overlay.fill(BG_COLOR)
+        self.screen.blit(overlay, (0, 0))
         
-        # Draw title
-        title = self.title_font.render("TETRIS", True, WHITE)
-        title_rect = title.get_rect(centerx=GAME_AREA_WIDTH + SIDEBAR_WIDTH // 2, top=30)
-        self.screen.blit(title, title_rect)
+        y_pos = GAME_AREA_HEIGHT // 2 - 80
         
-        # Draw all panels
-        self.draw_next_piece()
-        self.draw_stats()
-        self.draw_controls()
+        game_over = self.title_font.render("GAME OVER", True, RED)
+        go_rect = game_over.get_rect(center=(GAME_AREA_WIDTH // 2, y_pos))
+        self.screen.blit(game_over, go_rect)
+        
+        score_text = self.large_font.render(f"Score: {self.score}", True, TEXT_PRIMARY)
+        score_rect = score_text.get_rect(center=(GAME_AREA_WIDTH // 2, y_pos + 60))
+        self.screen.blit(score_text, score_rect)
+        
+        restart = self.medium_font.render("Press R to Restart", True, ACCENT)
+        restart_rect = restart.get_rect(center=(GAME_AREA_WIDTH // 2, y_pos + 110))
+        self.screen.blit(restart, restart_rect)
     
     def draw(self):
-        self.screen.fill(BLACK)
+        self.screen.fill(BG_COLOR)
         self.draw_board()
-        
-        if not self.game_over:
-            self.draw_current_piece()
-        
         self.draw_sidebar()
         
         if self.game_over:
-            # Draw semi-transparent overlay
+            self.draw_game_over()
+        
+        if self.paused and not self.game_over:
             overlay = pygame.Surface((GAME_AREA_WIDTH, GAME_AREA_HEIGHT))
-            overlay.set_alpha(180)
-            overlay.fill(BLACK)
+            overlay.set_alpha(150)
+            overlay.fill(BG_COLOR)
             self.screen.blit(overlay, (0, 0))
             
-            # Draw game over text
-            game_over_text = self.title_font.render("GAME OVER", True, RED)
-            score_text = self.font.render(f"Final Score: {self.score}", True, WHITE)
-            restart_text = self.small_font.render("Press R to Restart", True, CYAN)
-            
-            game_over_rect = game_over_text.get_rect(center=(GAME_AREA_WIDTH // 2, GAME_AREA_HEIGHT // 2 - 60))
-            score_rect = score_text.get_rect(center=(GAME_AREA_WIDTH // 2, GAME_AREA_HEIGHT // 2))
-            restart_rect = restart_text.get_rect(center=(GAME_AREA_WIDTH // 2, GAME_AREA_HEIGHT // 2 + 60))
-            
-            self.screen.blit(game_over_text, game_over_rect)
-            self.screen.blit(score_text, score_rect)
-            self.screen.blit(restart_text, restart_rect)
+            paused = self.title_font.render("PAUSED", True, ACCENT)
+            paused_rect = paused.get_rect(center=(GAME_AREA_WIDTH // 2, GAME_AREA_HEIGHT // 2))
+            self.screen.blit(paused, paused_rect)
         
         pygame.display.flip()
     
     def reset(self):
         self.board = [[0 for _ in range(BOARD_WIDTH)] for _ in range(BOARD_HEIGHT)]
-        self.board_colors = [[BLACK for _ in range(BOARD_WIDTH)] for _ in range(BOARD_HEIGHT)]
-        self.next_piece = Tetromino(BOARD_WIDTH // 2 - 1, 0)
-        self.spawn_piece()
+        self.board_colors = [[None for _ in range(BOARD_WIDTH)] for _ in range(BOARD_HEIGHT)]
+        self.current_piece = Tetromino()
+        self.next_piece = Tetromino()
         self.score = 0
         self.level = 1
         self.lines_cleared = 0
         self.game_over = False
+        self.paused = False
         self.fall_time = 0
+        self.fall_speed = 800
     
     def run(self):
         running = True
         
         while running:
-            self.fall_time += self.clock.get_rawtime()
-            self.clock.tick(60)  # 60 FPS
+            dt = self.clock.tick(60)
             
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -353,22 +382,28 @@ class Tetris:
                     if event.key == pygame.K_r:
                         self.reset()
                     
-                    if not self.game_over:
+                    if event.key == pygame.K_p and not self.game_over:
+                        self.paused = not self.paused
+                    
+                    if not self.game_over and not self.paused:
                         if event.key == pygame.K_LEFT:
                             self.move(-1, 0)
                         elif event.key == pygame.K_RIGHT:
                             self.move(1, 0)
                         elif event.key == pygame.K_DOWN:
-                            self.move(0, 1)
+                            if self.move(0, 1):
+                                self.score += 1
                         elif event.key == pygame.K_UP:
-                            self.rotate_piece()
+                            self.rotate()
                         elif event.key == pygame.K_SPACE:
                             self.hard_drop()
             
-            if not self.game_over and self.fall_time >= self.fall_speed:
-                if not self.move(0, 1):
-                    self.lock_piece()
-                self.fall_time = 0
+            if not self.game_over and not self.paused:
+                self.fall_time += dt
+                if self.fall_time >= self.fall_speed:
+                    if not self.move(0, 1):
+                        self.lock_piece()
+                    self.fall_time = 0
             
             self.draw()
         
