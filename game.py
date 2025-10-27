@@ -9,18 +9,22 @@ pygame.init()
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Pokémon Battle Simulation (Polished)")
+pygame.display.set_caption("Pokémon Battle Simulation (Polished GFX)")
 
 # --- COLORS AND STYLES (GBA/DS Aesthetic) ---
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
-GREEN = (0, 200, 0)
-YELLOW = (255, 215, 0)
-RED = (200, 0, 0)
-HP_BG = (170, 170, 170)
 MENU_BLUE = (100, 100, 255) # Command box blue
 MENU_GREY = (220, 220, 220) # Fight menu grey
-PLATFORM_GREEN = (0, 150, 0) # Platform color
+SKY_BLUE = (135, 206, 235) # Light Sky
+GRASS_GREEN = (0, 150, 0) # Platform 1 color
+DIRT_BROWN = (150, 100, 50) # Platform 2 color
+
+# HP Bar Colors
+HP_MAX = (0, 200, 0)
+HP_MID = (255, 215, 0)
+HP_LOW = (200, 0, 0)
+HP_BG = (170, 170, 170)
 
 # Fonts
 FONT_SIZE_TITLE = 32
@@ -51,9 +55,9 @@ red_potions_left = 3
 red_action_options = ["FIGHT", "ITEM", "SWITCH"]
 red_move_selection = 0
 red_action_selection = 0
-LEVEL = 50 # Common level for all Pokémon
+LEVEL = 50 
 
-# --- 2. GAME DATA: TYPE CHART AND MOVES (Simplified but complete) ---
+# --- 2. GAME DATA: TYPE CHART AND MOVES (Unchanged) ---
 
 TYPE_CHART = {
     "NORMAL": {"ROCK": 0.5, "GHOST": 0.0},
@@ -71,7 +75,6 @@ TYPE_CHART = {
     "DARK": {"GHOST": 2.0, "PSYCHIC": 2.0, "FIGHTING": 0.5},
     "STEEL": {"ROCK": 2.0, "ICE": 2.0, "FIRE": 0.5, "WATER": 0.5},
 }
-# Fill in missing relationships with 1.0 (neutral)
 for t in list(TYPE_CHART.keys()):
     for other_t in list(TYPE_CHART.keys()):
         if other_t not in TYPE_CHART[t]:
@@ -81,6 +84,7 @@ for t in list(TYPE_CHART.keys()):
 # --- 3. POKEMON AND DAMAGE LOGIC (Unchanged) ---
 
 class Pokemon:
+    # (Simplified class structure remains the same)
     def __init__(self, name, type, max_hp, attack, defense, moves, is_player_one):
         self.name = name
         self.type = type
@@ -100,61 +104,38 @@ class Pokemon:
             self.current_hp = 0
 
 def calculate_damage(attacker, defender, move):
-    """Calculates damage based on simplified Gen 2 formula, including multipliers."""
+    # (Damage calculation logic remains the same)
     power = move['power']
     move_type = move['type']
-    
-    # 1. Base Damage (Assuming level 50)
     base = int((((2 * LEVEL / 5 + 2) * power * attacker.attack / defender.defense) / 50) + 2)
-
-    # 2. Critical Hit (1/16 chance)
-    crit_chance = 1/16
-    crit_multiplier = 1.5 if random.random() < crit_chance else 1.0
-    
-    # 3. Random Multiplier (0.85 to 1.0)
+    crit_multiplier = 1.5 if random.random() < 1/16 else 1.0
     random_mult = random.randint(85, 100) / 100.0
-
-    # 4. STAB (Same Type Attack Bonus)
     stab_multiplier = 1.5 if attacker.type == move_type else 1.0
-
-    # 5. Type Effectiveness
     type_mult = TYPE_CHART.get(move_type, {}).get(defender.type, 1.0)
     
-    # Total Damage Calculation
     damage = int(base * crit_multiplier * random_mult * stab_multiplier * type_mult)
     if damage < 1:
         damage = 1
-
     return damage, crit_multiplier, type_mult
 
 def use_move(attacker, defender, move_name):
-    """Handles the move usage, damage application, and message generation."""
+    # (Move execution and message generation logic remains the same)
     move = attacker.moves.get(move_name)
-    if not move:
-        return [f"{attacker.name} failed to use {move_name}!"]
+    if not move: return [f"{attacker.name} failed to use {move_name}!"]
 
     damage, crit_mult, type_mult = calculate_damage(attacker, defender, move)
     defender.take_damage(damage)
 
-    # Message sequence
     messages = [f"{attacker.name} used {move_name}!"]
-    
-    if crit_mult > 1.0:
-        messages.append("A critical hit!")
-    
-    if type_mult >= 2.0:
-        messages.append("It's Super Effective!")
-    elif type_mult == 0.0:
-        messages.append(f"It had no effect on {defender.name}!")
-    elif type_mult < 1.0:
-        messages.append("It's not very effective...")
-        
+    if crit_mult > 1.0: messages.append("A critical hit!")
+    if type_mult >= 2.0: messages.append("It's Super Effective!")
+    elif type_mult == 0.0: messages.append(f"It had no effect on {defender.name}!")
+    elif type_mult < 1.0: messages.append("It's not very effective...")
     messages.append(f"{defender.name} took {damage} damage.")
-    
     return messages
 
 def use_item(pokemon):
-    """Heals a Pokemon with a Potion."""
+    # (Item usage logic remains the same)
     global red_potions_left
     heal_amount = 60 
     
@@ -169,9 +150,8 @@ def use_item(pokemon):
 
     red_potions_left -= 1
     
-    new_hp = min(max_hp, current_hp + heal_amount)
-    amount_healed = new_hp - current_hp
-    pokemon.current_hp = new_hp
+    amount_healed = min(max_hp - current_hp, heal_amount)
+    pokemon.current_hp += amount_healed
     
     messages = [
         f"Red used a Potion on {pokemon.name}!",
@@ -179,34 +159,30 @@ def use_item(pokemon):
     ]
     return messages
 
+
 # --- 4. TEAM SETUP ---
 
-# Red's Team (Gold/Silver Gen 2 Focus)
 red_team_data = [
-    # (Name, Type, Max HP, Attack, Defense, Moves, is_player_one)
     Pokemon("Tyranitar", "DARK", 120, 150, 110, {"Rock Slide": {"type": "ROCK", "power": 75}, "Crunch": {"type": "DARK", "power": 80}}, True),
     Pokemon("Scizor", "STEEL", 100, 130, 100, {"Iron Head": {"type": "STEEL", "power": 80}, "Slash": {"type": "NORMAL", "power": 70}}, True),
     Pokemon("Espeon", "PSYCHIC", 95, 120, 70, {"Psychic": {"type": "PSYCHIC", "power": 90}, "Swift": {"type": "NORMAL", "power": 60}}, True)
 ]
-red_team = red_team_data[:] # Create a copy for battle
+red_team = red_team_data[:]
 
-# Blue's Team (Red/Blue Gen 1 Focus)
 blue_team_data = [
-    # (Name, Type, Max HP, Attack, Defense, Moves, is_player_one)
     Pokemon("Charizard", "FIRE", 110, 120, 90, {"Flamethrower": {"type": "FIRE", "power": 95}, "Slash": {"type": "NORMAL", "power": 70}}, False),
     Pokemon("Blastoise", "WATER", 115, 110, 120, {"Surf": {"type": "WATER", "power": 90}, "Bite": {"type": "NORMAL", "power": 60}}, False),
     Pokemon("Venusaur", "GRASS", 110, 100, 115, {"Razor Leaf": {"type": "GRASS", "power": 55}, "Body Slam": {"type": "NORMAL", "power": 85}}, False)
 ]
 blue_team = blue_team_data[:]
 
-# Initial Battle State
 red_current = red_team[0]
 blue_current = blue_team[0]
 turn = "RED"
 message_queue.append(f"Battle Start! Blue sent out {blue_current.name}!")
 message_queue.append(f"Red sent out {red_current.name}!")
 
-# --- 5. ENHANCED DRAWING FUNCTIONS ---
+# --- 5. GFX AND DRAWING FUNCTIONS ---
 
 def draw_text(surface, text, font, color, x, y, center=False):
     """Utility to draw text."""
@@ -217,168 +193,223 @@ def draw_text(surface, text, font, color, x, y, center=False):
     else:
         surface.blit(text_surface, (x, y))
 
-def draw_hp_bar(surface, pokemon, x, y, width=150, height=8):
-    """Draws the HP bar within the info box."""
+def draw_hp_bar(surface, pokemon, x, y, width=200, height=8):
+    """Draws the HP bar within the info box with color changes."""
     hp_ratio = pokemon.current_hp / pokemon.max_hp if pokemon.max_hp > 0 else 0
     current_width = int(width * hp_ratio)
 
     if hp_ratio > 0.5:
-        color = GREEN
+        color = HP_MAX
     elif hp_ratio > 0.2:
-        color = YELLOW
+        color = HP_MID
     else:
-        color = RED
+        color = HP_LOW
 
-    # HP Bar background (black outline is enough)
+    # Draw the black outline
+    pygame.draw.rect(surface, BLACK, (x - 2, y - 2, width + 4, height + 4))
+    # Draw the background grey
     pygame.draw.rect(surface, HP_BG, (x, y, width, height))
-    # HP Bar fill
+    # Draw the colored fill
     pygame.draw.rect(surface, color, (x, y, current_width, height))
 
 def draw_info_box(surface, pokemon, is_player_one):
-    """Draws the detailed name/HP box."""
+    """Draws the detailed name/HP box with 3D effect."""
+    
     if is_player_one: # Red's Box (Bottom Left)
         box_rect = pygame.Rect(50, 350, 300, 100)
     else: # Blue's Box (Top Right)
         box_rect = pygame.Rect(450, 50, 300, 100)
 
-    # Main Box BG
-    pygame.draw.rect(surface, MENU_GREY, box_rect, 0, 10)
-    # Box Outline (3D effect)
-    pygame.draw.rect(surface, BLACK, box_rect, 2, 10)
+    # 3D Top-Left Light Edge
+    pygame.draw.line(surface, WHITE, (box_rect.x, box_rect.y + 1), (box_rect.x + box_rect.width, box_rect.y + 1), 3)
+    pygame.draw.line(surface, WHITE, (box_rect.x + 1, box_rect.y), (box_rect.x + 1, box_rect.y + box_rect.height), 3)
 
-    # Name and Level
+    # Main Box BG
+    pygame.draw.rect(surface, MENU_GREY, box_rect, 0, 8)
+    # Box Outline (3D effect)
+    pygame.draw.rect(surface, BLACK, box_rect, 3, 8)
+    
+    # Name, Level, and HP bar details
     draw_text(surface, pokemon.name, font_main, BLACK, box_rect.x + 10, box_rect.y + 10)
     draw_text(surface, f"Lv.{LEVEL}", font_main, BLACK, box_rect.x + 230, box_rect.y + 10)
 
-    # HP Bar Label ("HP")
-    draw_text(surface, "HP", font_small, BLACK, box_rect.x + 10, box_rect.y + 40)
+    draw_text(surface, "HP:", font_small, BLACK, box_rect.x + 10, box_rect.y + 40)
 
-    # HP Bar and Text
     hp_bar_x = box_rect.x + 50
     hp_bar_y = box_rect.y + 42
-    hp_bar_width = 200
-    draw_hp_bar(surface, pokemon, hp_bar_x, hp_bar_y, hp_bar_width)
+    hp_bar_width = 230
+    draw_hp_bar(surface, pokemon, hp_bar_x, hp_bar_y, hp_bar_width, height=12)
     
-    # HP numbers (only for player's Pokemon, classic look)
     if is_player_one:
         hp_text = f"{pokemon.current_hp}/{pokemon.max_hp}"
-        draw_text(surface, hp_text, font_small, BLACK, box_rect.x + 190, box_rect.y + 65)
+        draw_text(surface, hp_text, font_small, BLACK, box_rect.x + 180, box_rect.y + 68)
 
 def draw_message_box(surface, message):
-    """Draws the main message box that takes up the bottom width."""
+    """Draws the main message box with a professional border."""
     msg_box_rect = pygame.Rect(0, SCREEN_HEIGHT - 120, SCREEN_WIDTH, 120)
     
-    # Main box (Blue background for command/message area)
+    # Bottom area background
     pygame.draw.rect(surface, MENU_BLUE, msg_box_rect)
-    pygame.draw.rect(surface, BLACK, msg_box_rect, 3) # Black Border
-
-    # Text Area
-    text_area_rect = pygame.Rect(10, SCREEN_HEIGHT - 110, SCREEN_WIDTH - 20, 50)
-    pygame.draw.rect(surface, WHITE, text_area_rect)
-    pygame.draw.rect(surface, BLACK, text_area_rect, 2)
     
-    draw_text(surface, message, font_main, BLACK, text_area_rect.x + 10, text_area_rect.centery, center=False)
+    # Text Area Box - This is where the message appears
+    text_area_rect = pygame.Rect(10, SCREEN_HEIGHT - 110, SCREEN_WIDTH - 20, 50)
+    pygame.draw.rect(surface, WHITE, text_area_rect, 0, 5)
+    
+    # GBA style border
+    pygame.draw.rect(surface, BLACK, text_area_rect, 3, 5) 
+    
+    draw_text(surface, message, font_main, BLACK, text_area_rect.x + 15, text_area_rect.centery, center=False)
 
 def draw_command_menu(surface):
-    """Draws the action menu (FIGHT, ITEM, SWITCH) next to the message box."""
+    """Draws the action menu (FIGHT, ITEM, SWITCH) with button style."""
     global red_action_options, red_action_selection
     
-    # Menu is drawn on the right half of the message box area
     menu_x, menu_y = SCREEN_WIDTH // 2, SCREEN_HEIGHT - 65
     menu_width, menu_height = SCREEN_WIDTH // 2, 65
-    
-    # Draw Menu Box
     menu_rect = pygame.Rect(menu_x, menu_y, menu_width, menu_height)
-    pygame.draw.rect(surface, MENU_GREY, menu_rect)
+
+    # Draw Button Panel Background
+    pygame.draw.rect(surface, (180, 180, 180), menu_rect)
     pygame.draw.rect(surface, BLACK, menu_rect, 2)
     
     for i, option in enumerate(red_action_options):
-        text_x = menu_x + 30 + (i % 2) * 200
-        text_y = menu_y + 10 + (i // 2) * 30
+        # Coordinates for 2x2 layout
+        row = i // 2
+        col = i % 2
         
-        color = RED if i == red_action_selection else BLACK
-        # Draw selection triangle
-        if i == red_action_selection:
-            triangle_points = [
-                (text_x - 15, text_y + 8),
-                (text_x - 5, text_y + 4),
-                (text_x - 5, text_y + 12),
-            ]
-            pygame.draw.polygon(surface, color, triangle_points)
-            
-        draw_text(surface, option, font_main, color, text_x, text_y)
+        button_x = menu_x + 5 + col * (menu_width // 2)
+        button_y = menu_y + 5 + row * (menu_height // 2 - 5)
+        button_width = menu_width // 2 - 10
+        button_height = menu_height // 2 - 10
+        
+        button_rect = pygame.Rect(button_x, button_y, button_width, button_height)
+
+        is_selected = (i == red_action_selection)
+        
+        # Button Fill and 3D Effect
+        fill_color = (200, 200, 255) if is_selected else MENU_GREY
+        shadow_color = BLACK if is_selected else (100, 100, 100)
+        
+        pygame.draw.rect(surface, shadow_color, (button_x + 2, button_y + 2, button_width, button_height), 0, 5) # Shadow
+        pygame.draw.rect(surface, fill_color, button_rect, 0, 5) # Main button
+        pygame.draw.rect(surface, BLACK, button_rect, 1, 5) # Border
+        
+        text_color = BLACK
+        draw_text(surface, option, font_main, text_color, button_rect.centerx, button_rect.centery, center=True)
 
 def draw_fight_menu(surface):
-    """Draws the move selection menu."""
+    """Draws the move selection menu with button style."""
     global red_move_selection
     
     menu_x, menu_y = SCREEN_WIDTH // 2, SCREEN_HEIGHT - 65
     menu_width, menu_height = SCREEN_WIDTH // 2, 65
     menu_rect = pygame.Rect(menu_x, menu_y, menu_width, menu_height)
 
-    # Draw Menu Box
-    pygame.draw.rect(surface, MENU_GREY, menu_rect)
+    pygame.draw.rect(surface, (180, 180, 180), menu_rect)
     pygame.draw.rect(surface, BLACK, menu_rect, 2)
     
     moves = list(red_current.moves.keys())
     
     for i, move_name in enumerate(moves):
-        # Coordinates based on 2x2 grid
-        text_x = menu_x + 30 + (i % 2) * 200
-        text_y = menu_y + 10 + (i // 2) * 30
+        # Coordinates for 2x2 layout
+        row = i // 2
+        col = i % 2
         
-        color = RED if i == red_move_selection else BLACK
+        button_x = menu_x + 5 + col * (menu_width // 2)
+        button_y = menu_y + 5 + row * (menu_height // 2 - 5)
+        button_width = menu_width // 2 - 10
+        button_height = menu_height // 2 - 10
         
-        # Draw selection triangle
-        if i == red_move_selection:
-            triangle_points = [
-                (text_x - 15, text_y + 8),
-                (text_x - 5, text_y + 4),
-                (text_x - 5, text_y + 12),
-            ]
-            pygame.draw.polygon(surface, color, triangle_points)
-            
-        draw_text(surface, move_name, font_main, color, text_x, text_y)
+        button_rect = pygame.Rect(button_x, button_y, button_width, button_height)
+
+        is_selected = (i == red_move_selection)
+        
+        # Button Fill and 3D Effect
+        fill_color = (255, 255, 200) if is_selected else MENU_GREY
+        shadow_color = BLACK if is_selected else (100, 100, 100)
+        
+        pygame.draw.rect(surface, shadow_color, (button_x + 2, button_y + 2, button_width, button_height), 0, 5)
+        pygame.draw.rect(surface, fill_color, button_rect, 0, 5)
+        pygame.draw.rect(surface, BLACK, button_rect, 1, 5)
+        
+        draw_text(surface, move_name, font_main, BLACK, button_rect.centerx, button_rect.centery, center=True)
+
 
 def draw_arena(surface):
-    """Draws the background arena and platforms."""
-    # Main Sky/Background
-    surface.fill((100, 150, 255)) # Light Blue Sky
-
-    # Opponent Platform (Grass)
+    """Draws the background arena and platforms with gradients."""
+    
+    # 1. Main Sky/Background (Simple Gradient)
+    for y in range(0, SCREEN_HEIGHT - 120):
+        # Fade from light blue (top) to slightly darker blue (bottom)
+        r = int(135 + (200 - 135) * (y / (SCREEN_HEIGHT - 120)))
+        g = int(206 + (200 - 206) * (y / (SCREEN_HEIGHT - 120)))
+        b = int(235 + (180 - 235) * (y / (SCREEN_HEIGHT - 120)))
+        pygame.draw.line(surface, (r, g, b), (0, y), (SCREEN_WIDTH, y))
+        
+    # 2. Opponent Platform (Grass-like, Top Left)
     opp_platform_rect = pygame.Rect(70, 200, 300, 50)
-    pygame.draw.ellipse(surface, PLATFORM_GREEN, opp_platform_rect)
-    pygame.draw.ellipse(surface, (0, 100, 0), opp_platform_rect, 5) # Dark border
-
-    # Player Platform (Rock/Dirt)
+    pygame.draw.ellipse(surface, GRASS_GREEN, opp_platform_rect)
+    pygame.draw.ellipse(surface, (0, 100, 0), opp_platform_rect, 4) # Dark border
+    
+    # 3. Player Platform (Dirt/Rock-like, Bottom Right)
     player_platform_rect = pygame.Rect(430, 400, 350, 50)
-    pygame.draw.ellipse(surface, (150, 100, 50), player_platform_rect)
-    pygame.draw.ellipse(surface, (100, 60, 20), player_platform_rect, 5) # Dark border
+    pygame.draw.ellipse(surface, DIRT_BROWN, player_platform_rect)
+    pygame.draw.ellipse(surface, (100, 60, 20), player_platform_rect, 4) # Dark border
 
-    # Pokémon Placeholders (Simulating Sprites)
-    # Blue's Pokémon (Top-Left)
-    blue_sprite_x, blue_sprite_y = 120, 120
-    pygame.draw.rect(surface, MENU_GREY, (blue_sprite_x, blue_sprite_y, 100, 100), 0, 10)
-    pygame.draw.rect(surface, BLACK, (blue_sprite_x, blue_sprite_y, 100, 100), 2, 10)
-    draw_text(surface, blue_current.name, font_small, BLACK, blue_sprite_x + 50, blue_sprite_y + 50, center=True)
+    # 4. Pokémon Sprite Display Areas (Where your PNGs would go)
     
+    # BLUE'S SPRITE (Opponent - Top-Left)
+    blue_sprite_x, blue_sprite_y = 120, 100
+    sprite_size = 150
+    # Placeholder for loaded image
+    pygame.draw.rect(surface, BLACK, (blue_sprite_x - 5, blue_sprite_y - 5, sprite_size + 10, sprite_size + 10), 0, 15) # Shadow/Outline
+    pygame.draw.rect(surface, (255, 200, 200), (blue_sprite_x, blue_sprite_y, sprite_size, sprite_size), 0, 15) # Main Area
+    draw_text(surface, blue_current.name, font_main, BLACK, blue_sprite_x + 75, blue_sprite_y + 75, center=True)
+    draw_text(surface, "PLACEHOLDER", font_small, BLACK, blue_sprite_x + 75, blue_sprite_y + 105, center=True)
+    # Visual placeholder for Charizard 
 
-    # Red's Pokémon (Bottom-Right)
-    red_sprite_x, red_sprite_y = 580, 280
-    pygame.draw.rect(surface, MENU_GREY, (red_sprite_x, red_sprite_y, 100, 100), 0, 10)
-    pygame.draw.rect(surface, BLACK, (red_sprite_x, red_sprite_y, 100, 100), 2, 10)
-    draw_text(surface, red_current.name, font_small, BLACK, red_sprite_x + 50, red_sprite_y + 50, center=True)
-    
+    # RED'S SPRITE (Player - Bottom-Right)
+    red_sprite_x, red_sprite_y = 500, 230
+    sprite_size = 180
+    # Placeholder for loaded image (larger since it's the back sprite)
+    pygame.draw.rect(surface, BLACK, (red_sprite_x - 5, red_sprite_y - 5, sprite_size + 10, sprite_size + 10), 0, 15)
+    pygame.draw.rect(surface, (200, 200, 255), (red_sprite_x, red_sprite_y, sprite_size, sprite_size), 0, 15)
+    draw_text(surface, red_current.name, font_main, BLACK, red_sprite_x + 90, red_sprite_y + 90, center=True)
+    draw_text(surface, "PLACEHOLDER (BACK VIEW)", font_small, BLACK, red_sprite_x + 90, red_sprite_y + 120, center=True)
+    # Visual placeholder for Tyranitar 
 
+# --- IMAGE LOADING COMMENTARY ---
+# To load actual images, uncomment and use the following function:
+"""
+def load_pokemon_images():
+    try:
+        # Load your opponent sprite (e.g., Charizard.png)
+        global OPPONENT_SPRITE 
+        OPPONENT_SPRITE = pygame.image.load('assets/charizard.png').convert_alpha()
+        OPPONENT_SPRITE = pygame.transform.scale(OPPONENT_SPRITE, (150, 150))
+        
+        # Load your player back sprite (e.g., Tyranitar_back.png)
+        global PLAYER_SPRITE
+        PLAYER_SPRITE = pygame.image.load('assets/tyranitar_back.png').convert_alpha()
+        PLAYER_SPRITE = pygame.transform.scale(PLAYER_SPRITE, (180, 180))
+        
+        # You would then replace the 'draw_rect' placeholders in draw_arena 
+        # with 'surface.blit(PLAYER_SPRITE, (red_sprite_x, red_sprite_y))'
+        
+    except pygame.error as e:
+        print(f"Error loading images. Ensure you have 'assets/charizard.png' and 'assets/tyranitar_back.png' in place. Error: {e}")
+
+# Call load_pokemon_images() at the start of the main loop.
+"""
+# --- END IMAGE LOADING COMMENTARY ---
 
 def draw_inventory_and_status(surface):
-    """Draws Red's inventory status next to the player's info box."""
+    """Draws Red's inventory status."""
     inventory_x, inventory_y = 50, 460
     
-    # Draw simple button/box for Potion count
     box_rect = pygame.Rect(inventory_x, inventory_y, 150, 25)
     pygame.draw.rect(surface, (150, 200, 250), box_rect, 0, 5)
-    pygame.draw.rect(surface, BLACK, box_rect, 1, 5)
+    pygame.draw.rect(surface, BLACK, box_rect, 2, 5)
     
     draw_text(surface, f"Potions: {red_potions_left}", font_small, BLACK, box_rect.centerx, box_rect.centery, center=True)
 
@@ -386,18 +417,17 @@ def draw_inventory_and_status(surface):
 # --- 6. GAME CONTROL FLOW (Unchanged logic) ---
 
 def handle_faint(fainted_pokemon):
-    """Checks for fainting and handles switches or game end."""
+    # (Faint and switch logic remains the same)
     global red_current, blue_current, battle_state, message_queue
     
     if fainted_pokemon == blue_current:
-        # Find the index of the fainted Pokémon in the original list to remove it
-        for i, p in enumerate(blue_team):
-            if p.name == blue_current.name:
-                blue_team.pop(i)
-                break
+        fainted_name = blue_current.name
+        # Remove fainted from list
+        blue_team[:] = [p for p in blue_team if p.name != fainted_name]
         
         try:
             blue_current = blue_team[0]
+            message_queue.append(f"{fainted_name} fainted!")
             message_queue.append(f"Blue sends out {blue_current.name}!")
         except IndexError:
             message_queue.append("Blue is defeated! Red wins the simulation!")
@@ -405,15 +435,13 @@ def handle_faint(fainted_pokemon):
             return True
             
     elif fainted_pokemon == red_current:
-        message_queue.append(f"{red_current.name} fainted!")
-        # Find and remove the fainted Pokémon from the red team list
-        for i, p in enumerate(red_team):
-            if p.name == red_current.name:
-                red_team.pop(i)
-                break
+        fainted_name = red_current.name
+        # Remove fainted from list
+        red_team[:] = [p for p in red_team if p.name != fainted_name]
                 
         try:
             red_current = red_team[0]
+            message_queue.append(f"{fainted_name} fainted!")
             message_queue.append(f"Red automatically sends out {red_current.name}!")
         except IndexError:
             message_queue.append("Red is defeated! Blue wins the simulation!")
@@ -423,7 +451,7 @@ def handle_faint(fainted_pokemon):
     return False
 
 def execute_player_turn(action, data=None):
-    """Executes Red's chosen action and sets up Blue's counter-turn."""
+    # (Turn execution logic remains the same)
     global battle_state, message_queue, red_current
     
     if action == "FIGHT":
@@ -442,7 +470,7 @@ def execute_player_turn(action, data=None):
         if next_pokemon:
             old_name = red_current.name
             
-            # Simple list manipulation to move the current to the back and the new to the front
+            # Move the new Pokémon to the front of the battle list
             red_team.remove(next_pokemon)
             red_team.insert(0, next_pokemon)
             red_current = next_pokemon
@@ -451,24 +479,21 @@ def execute_player_turn(action, data=None):
             message_queue.append(f"Red sent out {red_current.name}!")
         else:
             message_queue.append("Red has no other available Pokémon to switch to!")
-            # If switch failed, force re-selection of action
             battle_state = BATTLE_STATE_CHOOSING_ACTION
-            return # Skip AI turn
+            return 
     
     battle_state = BATTLE_STATE_DISPLAY_MESSAGE
 
 def execute_ai_turn():
-    """Executes Blue's turn (simple AI: always attacks with the first move)."""
+    # (AI execution logic remains the same)
     global battle_state, message_queue, blue_current, red_current
     
-    # Check if Red fainted from the previous move (if any)
     if red_current.is_fainted():
         if handle_faint(red_current):
             return 
     
-    # Blue attacks Red
     if blue_current and not blue_current.is_fainted():
-        # Blue always chooses the first move for simplicity
+        # AI always chooses the first move
         move_name = list(blue_current.moves.keys())[0]
         messages = use_move(blue_current, red_current, move_name)
         message_queue.extend(messages)
@@ -490,60 +515,43 @@ while running:
             if event.key == pygame.K_ESCAPE:
                 running = False
             
-            # Input handling depends on the current state
             if battle_state == BATTLE_STATE_CHOOSING_ACTION:
-                if event.key == pygame.K_UP:
-                    red_action_selection = max(0, red_action_selection - 2)
-                elif event.key == pygame.K_DOWN:
-                    red_action_selection = min(len(red_action_options) - 1, red_action_selection + 2)
-                elif event.key == pygame.K_LEFT:
-                    red_action_selection = max(0, red_action_selection - 1)
-                elif event.key == pygame.K_RIGHT:
-                    red_action_selection = min(len(red_action_options) - 1, red_action_selection + 1)
+                if event.key == pygame.K_UP: red_action_selection = max(0, red_action_selection - 2)
+                elif event.key == pygame.K_DOWN: red_action_selection = min(len(red_action_options) - 1, red_action_selection + 2)
+                elif event.key == pygame.K_LEFT: red_action_selection = max(0, red_action_selection - 1)
+                elif event.key == pygame.K_RIGHT: red_action_selection = min(len(red_action_options) - 1, red_action_selection + 1)
                 elif event.key == pygame.K_RETURN:
                     chosen_action = red_action_options[red_action_selection]
-                    
                     if chosen_action == "FIGHT":
                         battle_state = BATTLE_STATE_CHOOSING_MOVE
                         red_move_selection = 0 
-                    elif chosen_action == "ITEM":
-                        execute_player_turn("ITEM")
-                        turn = "BLUE"
-                    elif chosen_action == "SWITCH":
-                        execute_player_turn("SWITCH")
+                    else:
+                        execute_player_turn(chosen_action)
                         turn = "BLUE"
                         
             elif battle_state == BATTLE_STATE_CHOOSING_MOVE:
                 moves = list(red_current.moves.keys())
-                if event.key == pygame.K_UP or event.key == pygame.K_LEFT:
-                    red_move_selection = max(0, red_move_selection - 1)
-                elif event.key == pygame.K_DOWN or event.key == pygame.K_RIGHT:
-                    red_move_selection = min(len(moves) - 1, red_move_selection + 1)
-                elif event.key == pygame.K_BACKSPACE:
-                    battle_state = BATTLE_STATE_CHOOSING_ACTION # Go back to main menu
+                if event.key == pygame.K_UP or event.key == pygame.K_LEFT: red_move_selection = max(0, red_move_selection - 1)
+                elif event.key == pygame.K_DOWN or event.key == pygame.K_RIGHT: red_move_selection = min(len(moves) - 1, red_move_selection + 1)
+                elif event.key == pygame.K_BACKSPACE: battle_state = BATTLE_STATE_CHOOSING_ACTION
                 elif event.key == pygame.K_RETURN:
                     execute_player_turn("FIGHT", red_move_selection)
                     turn = "BLUE"
                     
             elif battle_state == BATTLE_STATE_DISPLAY_MESSAGE:
                 if event.key == pygame.K_SPACE or event.key == pygame.K_RETURN:
-                    # Only advance if the current message timer has run out OR it's the very first message
                     if message_display_timer >= MESSAGE_DURATION or message_display_timer == 0:
                         message_queue.pop(0)
                         message_display_timer = 0
                 
     # Update Logic
     if battle_state == BATTLE_STATE_DISPLAY_MESSAGE:
-        # Auto-advance message after timer if no key is pressed
         if message_display_timer < MESSAGE_DURATION and message_queue:
             message_display_timer += 1
         
-        # When messages are cleared, proceed to the next phase
         if not message_queue:
             if battle_state != BATTLE_STATE_END:
-                # Check for faints again to ensure correct turn flow after a move
                 if handle_faint(red_current) or handle_faint(blue_current):
-                    # If fainting occurred, handle_faint will set the next state
                     pass
                 elif turn == "RED":
                     battle_state = BATTLE_STATE_CHOOSING_ACTION
@@ -551,22 +559,16 @@ while running:
                     battle_state = BATTLE_STATE_AWAITING_AI
     
     elif battle_state == BATTLE_STATE_AWAITING_AI:
-        # Execute Blue's turn immediately
         execute_ai_turn()
-        turn = "RED" # Switch back to Red after Blue's action
+        turn = "RED"
     
     # --- Drawing ---
     
-    # 1. Draw Arena and Sprites
     draw_arena(screen)
 
-    # 2. Draw Info Boxes
-    if blue_current:
-        draw_info_box(screen, blue_current, False)
-    if red_current:
-        draw_info_box(screen, red_current, True)
+    if blue_current: draw_info_box(screen, blue_current, False)
+    if red_current: draw_info_box(screen, red_current, True)
     
-    # 3. Draw Menus / Message Box
     current_message = message_queue[0] if message_queue else f"What will {red_current.name} do?"
     
     if battle_state == BATTLE_STATE_CHOOSING_ACTION:
@@ -578,19 +580,13 @@ while running:
         draw_fight_menu(screen)
         draw_inventory_and_status(screen)
     elif battle_state == BATTLE_STATE_DISPLAY_MESSAGE or battle_state == BATTLE_STATE_AWAITING_AI:
-        # Display the current message from the queue
         draw_message_box(screen, current_message)
     elif battle_state == BATTLE_STATE_END:
-        # Display final message
         draw_message_box(screen, current_message)
-        
-    # Draw turn indicator if not displaying a message
-    if battle_state in (BATTLE_STATE_CHOOSING_ACTION, BATTLE_STATE_CHOOSING_MOVE, BATTLE_STATE_AWAITING_AI):
-         draw_text(screen, "Red's Turn" if turn == "RED" else "Blue's Turn", font_small, BLACK, SCREEN_WIDTH // 2, 20, center=True)
+        draw_text(screen, "BATTLE ENDED (Press ESC to Exit)", font_main, BLACK, SCREEN_WIDTH // 2, 20, center=True)
 
     pygame.display.flip()
     
-    # Cap frame rate
     clock.tick(FPS)
 
 pygame.quit()
