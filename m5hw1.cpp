@@ -18,6 +18,7 @@ void menu() {
     cout << "---------" << endl;
     cout << "1 = Question 1 (Rainfall for Months)" << endl;
     cout << "2 = Question 2 (Volume of a Block)" << endl;
+    cout << "7 = All" << endl;
     cout << endl;
     cout << "Enter choice: ";
     int choice;
@@ -27,6 +28,10 @@ void menu() {
         question1();
     }
     else if (choice == 2) {
+        question2();
+    }
+    if (choice == 7) {
+        question1();
         question2();
     }
     else {
@@ -68,6 +73,7 @@ cin >> length;
 if (length <= 0) {
     cout << "Invalid Input." << endl;
     cout << "Input cannot be less than or equal to 0." << endl;
+    cin.clear();
     question2();
 }
 cout << "Enter Width: ";
@@ -75,6 +81,7 @@ cin >> width;
 if (width <= 0) {
     cout << "Invalid Input." << endl;
     cout << "Input cannot be less than or equal to 0." << endl;
+    cin.clear();
     question2();
 }
 cout << "Enter Height: ";
@@ -82,6 +89,7 @@ cin >> height;
 if (height <= 0) {
     cout << "Invalid Input." << endl;
     cout << "Input cannot be less than or equal to 0." << endl;
+    cin.clear();
     question2();
 }
 volume = length * width * height;
