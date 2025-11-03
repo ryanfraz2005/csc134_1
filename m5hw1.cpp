@@ -16,8 +16,8 @@ return 0;
 void menu() {
     cout << "MAIN MENU" << endl;
     cout << "---------" << endl;
-    cout << "1 = Question 1" << endl;
-    cout << "2 = Question 2" << endl;
+    cout << "1 = Question 1 (Rainfall for Months)" << endl;
+    cout << "2 = Question 2 (Volume of a Block)" << endl;
     cout << endl;
     cout << "Enter choice: ";
     int choice;
@@ -65,16 +65,25 @@ cout << endl;
 cout << "Finding the volume of a block." << endl;
 cout << "Enter Length: ";
 cin >> length;
-cout << "Enter Width: ";
-cin >> width;
-cout << "Enter Height: ";
-cin >> height;
-volume = length * width * height;
-
-if (length <= 0, width <= 0, height <= 0) {
+if (length <= 0) {
     cout << "Invalid Input." << endl;
-    cout << "Input cannot be less than 0." << endl;
+    cout << "Input cannot be less than or equal to 0." << endl;
     question2();
 }
-
+cout << "Enter Width: ";
+cin >> width;
+if (width <= 0) {
+    cout << "Invalid Input." << endl;
+    cout << "Input cannot be less than or equal to 0." << endl;
+    question2();
+}
+cout << "Enter Height: ";
+cin >> height;
+if (height <= 0) {
+    cout << "Invalid Input." << endl;
+    cout << "Input cannot be less than or equal to 0." << endl;
+    question2();
+}
+volume = length * width * height;
+cout << "The volume of the block is " << volume << endl;
 }
