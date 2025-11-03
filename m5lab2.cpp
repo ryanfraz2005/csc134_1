@@ -5,8 +5,40 @@ double getLength();
 double getWidth();
 double getArea(double length, double width);
 void   displayData(double length, double width, double area);
+void menu_area();
+void menu_main();
 
 int main() {
+ 
+    menu_main();
+
+    return 0;
+}
+
+void menu_main() {
+    cout << "MAIN MENU" << endl;
+    cout << "---------" << endl;
+    cout << "1. Area of Rectangle" << endl;
+    cout << "2. Exit" << endl;
+    cout << endl;
+    cout << "Enter choice: ";
+    int choice;
+    cin >> choice;
+
+    if (choice == 1) {
+        menu_area();
+    }
+    else if (choice == 2) {
+        cout << "Goodbye" << endl;
+    }
+    else {
+        cout << "Invalid choice." << endl << endl;
+        cin.clear();
+        menu_main();
+    }
+} 
+
+void menu_area() {
     double length,
            width,
            area;
@@ -19,9 +51,7 @@ int main() {
 
     displayData(length, width, area);
 
-    return 0;
 }
-
 double getLength() {
     double length;
     cout << "What is the length? ";
