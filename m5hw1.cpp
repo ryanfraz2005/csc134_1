@@ -65,7 +65,6 @@ cout << "The average rainfall for " << month1 << ", " << month2 << ", and " << m
 
 void question2() {
 double length, width, height, volume;
-
 cout << endl;
 cout << "Finding the volume of a block." << endl;
 cout << "Enter Length: ";
@@ -86,7 +85,7 @@ if (width <= 0) {
 }
 cout << "Enter Height: ";
 cin >> height;
-if (height <= 0) {
+if (length <= 0 && width <= 0 && height <=0) {
     cout << "Invalid Input." << endl;
     cout << "Input cannot be less than or equal to 0." << endl;
     cin.clear();
