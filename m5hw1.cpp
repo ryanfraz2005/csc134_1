@@ -5,6 +5,7 @@ using namespace std;
 void menu();
 void question1();
 void question2();
+void question3();
 
 int main () {
 
@@ -18,6 +19,7 @@ void menu() {
     cout << "---------" << endl;
     cout << "1 = Question 1 (Rainfall for Months)" << endl;
     cout << "2 = Question 2 (Volume of a Block)" << endl;
+    cout << "3 = Question 3 (Number Range)" << endl;
     cout << "7 = All" << endl;
     cout << endl;
     cout << "Enter choice: ";
@@ -30,7 +32,10 @@ void menu() {
     else if (choice == 2) {
         question2();
     }
-    if (choice == 7) {
+    else if (choice == 3) {
+        question3();
+    }
+    else if (choice == 7) {
         question1();
         question2();
     }
@@ -93,4 +98,47 @@ if (length <= 0 && width <= 0 && height <=0) {
 }
 volume = length * width * height;
 cout << "The volume of the block is " << volume << endl;
+}
+
+void question3() {
+   
+    cout << "Enter a number between 1-10: ";
+    int num;
+    cin >> num;
+
+    if (num == 1) {
+        cout << "The roman numeral version of 1 is I" << endl;
+    }
+    else if (num = 2) {
+        cout << "The roman numeral version of 2 is II" << endl;
+    }
+    else if (num = 3) {
+        cout << "The roman numeral version of 3 is III" << endl;
+    }
+    else if (num = 4) {
+        cout << "The roman numeral version of 4 is IV" << endl;
+    }
+    else if (num = 5) {
+        cout << "The roman numeral version of 5 is V" << endl;
+    }
+    else if (num = 6) {
+        cout << "The roman numeral version of 6 is VI" << endl;
+    }
+    else if (num = 7) {
+        cout << "The roman numeral version of 7 is VII" << endl;
+    }
+    else if (num = 8) {
+        cout << "The roman numeral version of 8 is VIII" << endl;
+    }
+    else if (num = 9) {
+        cout << "The roman numeral version of 9 is IX" << endl;
+    }
+    else if (num = 10) {
+        cout << "The roman numeral version of 10 is X" << endl;
+    }
+    else {
+        cout << "Invaid number. Must be a whole number between 1-10." << endl;
+        question3();
+    }
+
 }
