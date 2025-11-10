@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <cmath>
 using namespace std;
 
 void menu();
@@ -106,7 +107,7 @@ cout << "The volume of the block is " << volume << endl;
 }
 
 void question3() {
-   
+    cout << endl;
     cout << "Enter a number between 1-10: ";
     int num;
     cin >> num;
@@ -149,7 +150,7 @@ void question3() {
 }
 
 void question4() {
-
+    cout << endl;
     cout << "---------Geometry Calculator---------" << endl;
     cout << "1. Calculate the Area of a Circle" << endl;
     cout << "2. Calculate the Area of a Rectangle" << endl;
@@ -164,10 +165,59 @@ void question4() {
         cout << "Enter Radius: ";
         double radius;
         cin >> radius;
+        if (radius < 0) {
+            cout << "Input cannot be less than 0." << endl;
+            question4();
+        }
         double area;
-        
-
+        area = pow(3.14159, radius);
+        cout << "The Area = " << area << endl;
     }
-
-
+    else if (choice == 2) {
+        cout << "Calculate the Area of a Rectangle" << endl;
+        cout << "Enter Length: ";
+        double length;
+        cin >> length;
+        if (length < 0) {
+            cout << "Input cannot be less than 0." << endl;
+            question4();
+        }
+        cout << "Enter Width: ";
+        double width;
+        cin >> width;
+        if (width < 0) {
+            cout << "Input cannot be less than 0." << endl;
+            question4();
+        }
+        double area;
+        area = length * width;
+        cout << "The Area = " << area;
+    }     
+    else if (choice == 3) {
+        cout << "Calculae the Area of a Triangle" << endl;
+        cout << "Enter Base: ";
+        double base;
+        cin >> base;
+        cout << "Enter Height: ";
+        double height;
+        cin >> height;
+        double area;
+        area = (base * height) * 0.5;
+        cout << "The Area = " << area;
+        if (base < 0) {
+            cout << "Input cannot be less than 0." << endl;
+            question4();
+        }
+         if (height < 0) {
+            cout << "Input cannot be less than 0." << endl;
+            question4();
+        }
+    }
+    else if (choice == 4) {
+        menu();
+    }
+    else {
+        cout << "Invaid Choice." << endl;
+        question4();
+    }
 }
