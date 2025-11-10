@@ -20,7 +20,6 @@ int main() {
 }
 
 void method1() {
-
     cout << "Enter each Pokemon found per day." << endl;
     cout << "Day 0 = Monday, Day 4 = Friday" << endl;
     const int SIZE = 5;
@@ -41,8 +40,6 @@ void method1() {
 }
 
 void method2() {
-  
-
     const int SIZE = 5;
     string days[SIZE] = {"M", "T", "W", "Th", "F"}; 
     int pokemon[SIZE]; 

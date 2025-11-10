@@ -8,6 +8,8 @@ void question1();
 void question2();
 void question3();
 void question4();
+void question5();
+void question6();
 
 int main () {
 
@@ -23,6 +25,8 @@ void menu() {
     cout << "2 = Question 2 (Volume of a Block)" << endl;
     cout << "3 = Question 3 (Number Range)" << endl;
     cout << "4 = Question 4 (Geometry Calculator)" << endl;
+    cout << "5 = Question 5 (Distance Traveled)" << endl;
+    cout << "6 = Question 6 (Menu Program)" << endl;
     cout << "7 = All" << endl;
     cout << endl;
     cout << "Enter choice: ";
@@ -41,9 +45,16 @@ void menu() {
     else if (choice == 4) {
         question4();
     }
+    else if (choice == 5) {
+        question5();
+    }
     else if (choice == 7) {
         question1();
         question2();
+        question3();
+        question4();
+        question5();
+        question6();
     }
     else {
         cout << "Invalid choice." << endl << endl;
@@ -220,4 +231,71 @@ void question4() {
         cout << "Invaid Choice." << endl;
         question4();
     }
+}
+
+void question5() {
+    cout << endl;
+    cout << endl;
+    cout << "Enter speed (MPH): ";
+    double speed;
+    cin >> speed;
+    if (speed < 0) {
+        cout << "Invalid Input. Speed cannot be less than 0." << endl;
+        question5();
+    }
+    cout << "Enter hours traveled: ";
+    int time;
+    cin >> time;
+    int distance;
+    distance = speed * time;
+    cout << endl;
+    cout << "Hour    Distance Traveled" << endl;
+    cout << "-------------------------" << endl;
+    for (int Hour = 1; Hour <= time; Hour++) {
+        int DT;
+        DT = Hour * speed;
+        cout << " " << Hour << "            " << DT << endl;
+    }
+
+}
+
+void question6() {
+    cout << endl;
+    cout << "         Question 6 Menu" << endl;
+    cout << "------------------------------------" << endl;
+    cout << "1 = Question 1 (Rainfall for Months)" << endl;
+    cout << "2 = Question 2 (Volume of a Block)" << endl;
+    cout << "3 = Question 3 (Number Range)" << endl;
+    cout << "4 = Question 4 (Geometry Calculator)" << endl;
+    cout << "5 = Question 5 (Distance Traveled)" << endl;
+    cout << "6 = Quit" << endl;
+    cout << endl;
+    cout << "Enter choice: ";
+    int choice;
+    cin >> choice;
+
+    if (choice == 1) {
+        question1();
+    }
+    else if (choice == 2) {
+        question2();
+    }
+    else if (choice == 3) {
+        question3();
+    }
+    else if (choice == 4) {
+        question4();
+    }
+    else if (choice == 5) {
+        question5();
+    }
+    else if (choice == 6) {
+     cout << "End of Program." << endl;
+    }
+    else {
+        cout << "Invalid choice." << endl << endl;
+        cin.clear();
+        question6();
+    }
+
 }
