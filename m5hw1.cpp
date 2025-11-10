@@ -6,6 +6,7 @@ void menu();
 void question1();
 void question2();
 void question3();
+void question4();
 
 int main () {
 
@@ -20,6 +21,7 @@ void menu() {
     cout << "1 = Question 1 (Rainfall for Months)" << endl;
     cout << "2 = Question 2 (Volume of a Block)" << endl;
     cout << "3 = Question 3 (Number Range)" << endl;
+    cout << "4 = Question 4 (Geometry Calculator)" << endl;
     cout << "7 = All" << endl;
     cout << endl;
     cout << "Enter choice: ";
@@ -34,6 +36,9 @@ void menu() {
     }
     else if (choice == 3) {
         question3();
+    }
+    else if (choice == 4) {
+        question4();
     }
     else if (choice == 7) {
         question1();
@@ -109,36 +114,60 @@ void question3() {
     if (num == 1) {
         cout << "The roman numeral version of 1 is I" << endl;
     }
-    else if (num = 2) {
+    else if (num == 2) {
         cout << "The roman numeral version of 2 is II" << endl;
     }
-    else if (num = 3) {
+    else if (num == 3) {
         cout << "The roman numeral version of 3 is III" << endl;
     }
-    else if (num = 4) {
+    else if (num == 4) {
         cout << "The roman numeral version of 4 is IV" << endl;
     }
-    else if (num = 5) {
+    else if (num == 5) {
         cout << "The roman numeral version of 5 is V" << endl;
     }
-    else if (num = 6) {
+    else if (num == 6) {
         cout << "The roman numeral version of 6 is VI" << endl;
     }
-    else if (num = 7) {
+    else if (num == 7) {
         cout << "The roman numeral version of 7 is VII" << endl;
     }
-    else if (num = 8) {
+    else if (num == 8) {
         cout << "The roman numeral version of 8 is VIII" << endl;
     }
-    else if (num = 9) {
+    else if (num == 9) {
         cout << "The roman numeral version of 9 is IX" << endl;
     }
-    else if (num = 10) {
+    else if (num == 10) {
         cout << "The roman numeral version of 10 is X" << endl;
     }
     else {
         cout << "Invaid number. Must be a whole number between 1-10." << endl;
         question3();
     }
+
+}
+
+void question4() {
+
+    cout << "---------Geometry Calculator---------" << endl;
+    cout << "1. Calculate the Area of a Circle" << endl;
+    cout << "2. Calculate the Area of a Rectangle" << endl;
+    cout << "3. Calculate the Area of a Triangle" << endl;
+    cout << "4. Quit" << endl;
+    cout << "Enter your choice (1-4): ";
+    int choice;
+    cin >> choice;
+
+    if (choice == 1) {
+        cout << "Calculate the Area of a Circle" << endl;
+        cout << "Enter Radius: ";
+        double radius;
+        cin >> radius;
+        double area;
+        
+
+    }
+
 
 }
