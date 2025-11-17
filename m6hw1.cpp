@@ -168,6 +168,7 @@ void room__2() {
 
 void room3() {
     string riddle;
+    cout << endl;
     cout << "This next room only requires you to solve this riddle." << endl;
     cout << endl;
     cout << "What comes up but never comes down? ";
