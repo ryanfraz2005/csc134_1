@@ -171,7 +171,7 @@ void room3() {
     cout << endl;
     cout << "This next room only requires you to solve this riddle." << endl;
     cout << endl;
-    cout << "What comes up but never comes down? ";
+    cout << "What goes down but never comes up? ";
     cin >> riddle;
     std::transform(riddle.begin(), riddle.end(), riddle.begin(),
     [](unsigned char c){ return std::tolower(c); });
